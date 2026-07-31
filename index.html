@@ -214,10 +214,13 @@
       padding: 16px;
       box-shadow: var(--shadow);
       cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
       display: flex;
       align-items: center;
       gap: 12px;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
     }
     .feature-card:active { transform: scale(0.98); }
     .feature-icon {
@@ -1392,28 +1395,46 @@
       document.getElementById('statTodo').textContent = pending;
       document.getElementById('statSave').textContent = savePct + '%';
 
-      const features = [
-        { page:'plan', icon:'📝', name:'每日计划', desc:`待办清单 · ${done}/${state.plan.tasks.length}`, color: 'var(--green-light)' },
-        { page:'discipline', icon:'🔥', name:'自律打卡', desc:`今日 · ${state.discipline.habits.filter(h => isHabitDoneToday(h)).length}/${state.discipline.habits.length}`, color: 'var(--purple-light)' },
-        { page:'review', icon:'📊', name:'每周复盘', desc:`成长 · ${state.review.reviews.length} 篇`, color: '#FFF0E6' },
-        { page:'diet', icon:'🍽️', name:'饮食记录', desc:`今日 · ${todayDietCount()} 餐`, color: '#F0F8E6' },
-        { page:'challenge', icon:'🏆', name:'挑战', desc:`进行中 · ${state.challenge.challenges.filter(c=>!c.done).length} 个`, color: '#FFF8E1' },
-        { page:'timer', icon:'⏱️', name:'计时', desc:`专注 · ${state.timer.history.filter(r=>r.date.startsWith(todayStr())).reduce((s,r)=>s+r.minutes,0)} 分钟`, color: '#E8F0FE' },
-        { page:'flash', icon:'⚡', name:'灵光一闪', desc:`灵感 · ${state.flash.ideas.length} 条`, color: '#FCE4EC' },
-        { page:'experience', icon:'💡', name:'经验库', desc:`笔记 · ${state.experience.notes.length} 条`, color: 'var(--blue-light)' },
-        { page:'accounting', icon:'💰', name:'存钱计划', desc:`收支追踪 · ${formatMoney(saved)}`, color: 'var(--yellow-light)' },
-        { page:'water', icon:'💧', name:'喝水记录', desc:`饮水 · ${state.water.today}ml`, color: '#E3F2FD' },
-        { page:'memo', icon:'📋', name:'备忘录', desc:`记录 · ${state.memo.memos.length} 条`, color: '#FFF3E0' }
+      const featureDefs = [
+        { id:'plan', page:'plan', icon:'📝', name:'每日计划', descFn:()=>`待办清单 · ${done}/${state.plan.tasks.length}`, color: 'var(--green-light)' },
+        { id:'discipline', page:'discipline', icon:'🔥', name:'自律打卡', descFn:()=>`今日 · ${state.discipline.habits.filter(h => isHabitDoneToday(h)).length}/${state.discipline.habits.length}`, color: 'var(--purple-light)' },
+        { id:'review', page:'review', icon:'📊', name:'每周复盘', descFn:()=>`成长 · ${state.review.reviews.length} 篇`, color: '#FFF0E6' },
+        { id:'diet', page:'diet', icon:'🍽️', name:'饮食记录', descFn:()=>`今日 · ${todayDietCount()} 餐`, color: '#F0F8E6' },
+        { id:'challenge', page:'challenge', icon:'🏆', name:'挑战', descFn:()=>`进行中 · ${state.challenge.challenges.filter(c=>!c.done).length} 个`, color: '#FFF8E1' },
+        { id:'timer', page:'timer', icon:'⏱️', name:'计时', descFn:()=>`专注 · ${state.timer.history.filter(r=>r.date.startsWith(todayStr())).reduce((s,r)=>s+r.minutes,0)} 分钟`, color: '#E8F0FE' },
+        { id:'flash', page:'flash', icon:'⚡', name:'灵光一闪', descFn:()=>`灵感 · ${state.flash.ideas.length} 条`, color: '#FCE4EC' },
+        { id:'experience', page:'experience', icon:'💡', name:'经验库', descFn:()=>`笔记 · ${state.experience.notes.length} 条`, color: 'var(--blue-light)' },
+        { id:'accounting', page:'accounting', icon:'💰', name:'存钱计划', descFn:()=>`收支追踪 · ${formatMoney(saved)}`, color: 'var(--yellow-light)' },
+        { id:'water', page:'water', icon:'💧', name:'喝水记录', descFn:()=>`饮水 · ${state.water.today}ml`, color: '#E3F2FD' },
+        { id:'memo', page:'memo', icon:'📋', name:'备忘录', descFn:()=>`记录 · ${state.memo.memos.length} 条`, color: '#FFF3E0' }
       ];
-      document.getElementById('featureGrid').innerHTML = features.map(f => `
-        <div class="feature-card" onclick="navigate('${f.page}')">
+
+      // 使用用户自定义顺序，如果不存在则用默认顺序
+      if (!state.home.featureOrder || state.home.featureOrder.length !== featureDefs.length) {
+        state.home.featureOrder = featureDefs.map(f => f.id);
+      }
+      const orderMap = {};
+      state.home.featureOrder.forEach((id, i) => { orderMap[id] = i; });
+      const features = featureDefs.sort((a, b) => (orderMap[a.id] ?? 999) - (orderMap[b.id] ?? 999));
+
+      document.getElementById('featureGrid').innerHTML = features.map((f, i) => `
+        <div class="feature-card" draggable="true" data-fid="${f.id}" data-idx="${i}" onclick="handleFeatureClick(event,'${f.page}')"
+             ontouchstart="featureTouchStart(event,this)" ontouchmove="featureTouchMove(event)" ontouchend="featureTouchEnd(event,this)"
+             ondragstart="featureDragStart(event)" ondragover="event.preventDefault()" ondrop="featureDrop(event,this)">
           <div class="feature-icon" style="background:${f.color}">${f.icon}</div>
           <div class="feature-info">
             <div class="feature-name">${f.name}</div>
-            <div class="feature-desc">${f.desc}</div>
+            <div class="feature-desc">${f.descFn()}</div>
           </div>
         </div>
       `).join('');
+
+      // 提示用户可长按排序
+      if (!state.home._dragHintShown) {
+        state.home._dragHintShown = true;
+        saveState();
+        setTimeout(() => showToast('💡 长按卡片可拖拽排序'), 500);
+      }
 
       const list = document.getElementById('inspirationList');
       if (!state.home.inspirations.length) {
@@ -2530,6 +2551,109 @@
       if (!confirm('确定删除？')) return;
       state.flash.ideas = state.flash.ideas.filter(i => i.id !== id);
       saveState(); renderFlash(); showToast('已删除');
+    }
+
+    // ===================== 首页拖拽排序 =====================
+    let dragEl = null;
+    let touchTimer = null;
+    let touchMoved = false;
+    let ghostEl = null;
+    let dragStartIdx = -1;
+
+    function handleFeatureClick(e, page) {
+      // 如果刚完成拖拽操作，不触发点击
+      if (dragStartIdx >= 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      navigate(page);
+    }
+
+    // PC 拖拽
+    function featureDragStart(e) {
+      dragEl = e.target.closest('.feature-card');
+      if (!dragEl) return;
+      dragStartIdx = parseInt(dragEl.dataset.idx);
+      dragEl.style.opacity = '0.5';
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragEl.dataset.fid);
+    }
+
+    function featureDrop(e, targetEl) {
+      e.preventDefault();
+      if (!dragEl) return;
+      dragEl.style.opacity = '1';
+      const fromFid = dragEl.dataset.fid;
+      const toFid = targetEl.dataset.fid;
+      if (fromFid !== toFid) {
+        const order = state.home.featureOrder;
+        const fromIdx = order.indexOf(fromFid);
+        const toIdx = order.indexOf(toFid);
+        order.splice(fromIdx, 1);
+        order.splice(toIdx, 0, fromFid);
+        saveState();
+        renderHome();
+      }
+      dragEl = null;
+      dragStartIdx = -1;
+    }
+
+    // 移动端长按拖拽
+    function featureTouchStart(e, el) {
+      touchMoved = false;
+      dragStartIdx = parseInt(el.dataset.idx);
+      clearTimeout(touchTimer);
+      touchTimer = setTimeout(() => {
+        touchMoved = true;
+        dragEl = el;
+        el.style.opacity = '0.5';
+        el.style.transform = 'scale(1.05)';
+        el.style.zIndex = '10';
+        el.style.position = 'relative';
+        el.style.boxShadow = '0 8px 30px rgba(74,63,53,0.2)';
+        if (navigator.vibrate) navigator.vibrate(15);
+      }, 500);
+    }
+
+    function featureTouchMove(e) {
+      if (!touchMoved || !dragEl) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      const card = target?.closest('.feature-card');
+      if (card && card !== dragEl && card.dataset.fid !== dragEl.dataset.fid) {
+        const grid = document.getElementById('featureGrid');
+        const children = Array.from(grid.children);
+        const dragIdx = children.indexOf(dragEl);
+        const targetIdx = children.indexOf(card);
+        if (dragIdx < targetIdx) {
+          grid.insertBefore(dragEl, card.nextSibling);
+        } else {
+          grid.insertBefore(dragEl, card);
+        }
+      }
+    }
+
+    function featureTouchEnd(e, el) {
+      clearTimeout(touchTimer);
+      if (dragEl) {
+        dragEl.style.opacity = '1';
+        dragEl.style.transform = '';
+        dragEl.style.zIndex = '';
+        dragEl.style.position = '';
+        dragEl.style.boxShadow = '';
+      }
+      if (touchMoved && dragEl) {
+        // 保存新顺序
+        const cards = Array.from(document.getElementById('featureGrid').children);
+        state.home.featureOrder = cards.map(c => c.dataset.fid);
+        saveState();
+      }
+      touchMoved = false;
+      dragEl = null;
+      // 延迟重置 dragStartIdx 防止触发 click
+      setTimeout(() => { dragStartIdx = -1; }, 100);
     }
 
     // ===================== Init =====================
