@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#FDF6F0">
+  <title>刘何羊的工作台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FDF6F0;
+      --bg-soft: #FFF9F5;
+      --card: #FFFFFF;
+      --text: #4A3F35;
+      --text-secondary: #8A7E72;
+      --primary: #F4A698;
+      --primary-light: #FFDAD6;
+      --green: #A8D5BA;
+      --green-light: #E8F5ED;
+      --blue: #9CBDE0;
+      --blue-light: #E3EEF9;
+      --yellow: #F5D491;
+      --yellow-light: #FDF4DD;
+      --purple: #C9B6E4;
+      --purple-light: #F0E8FA;
+      --shadow: 0 4px 20px rgba(74, 63, 53, 0.06);
+      --radius: 20px;
+      --radius-sm: 14px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    #app { display: flex; height: 100vh; width: 100vw; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 88px;
+      background: #FFF8F2;
+      border-right: 1px solid rgba(244, 166, 152, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 0 20px;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+    .logo-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .logo {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #F4A698 0%, #F7C6B8 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 12px rgba(244, 166, 152, 0.3);
+      margin-bottom: 6px;
+    }
+    .logo-text { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
+    .nav-items { flex: 1; display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 0 10px; }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 4px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-secondary);
+    }
+    .nav-item:hover { background: rgba(244, 166, 152, 0.08); }
+    .nav-item.active { background: var(--text); color: #fff; }
+    .nav-item.active .nav-icon { filter: brightness(0) invert(1); }
+    .nav-icon { font-size: 22px; margin-bottom: 4px; transition: filter 0.2s; }
+    .nav-label { font-size: 11px; font-weight: 500; }
+
+    /* Main */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .mobile-header {
+      display: none;
+      padding: 12px 16px;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg);
+    }
+    .mobile-menu-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--card);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow);
+      font-size: 18px;
+    }
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 24px 28px;
+      scroll-behavior: smooth;
+    }
+    .content::-webkit-scrollbar { width: 0; }
+
+    /* Page sections */
+    .page { display: none; animation: fadeIn 0.25s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .page-title { font-size: 22px; font-weight: 700; margin: 0; }
+    .page-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+    /* Home */
+    .home-hero {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .home-avatar {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #F4A698 0%, #F7C6B8 60%, #FFE8E4 100%);
+      margin: 0 auto 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px;
+      box-shadow: 0 8px 24px rgba(244, 166, 152, 0.25);
+    }
+    .home-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .home-tagline { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+    .home-quote {
+      color: var(--primary);
+      font-weight: 500;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+    }
+
+    .quote-card {
+      background: linear-gradient(135deg, var(--primary-light) 0%, #FFF0EE 100%);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .quote-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .quote-title { font-size: 14px; font-weight: 700; }
+    .quote-btn {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.7);
+      border: none;
+      border-radius: 12px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+    .quote-text { font-size: 17px; font-weight: 500; line-height: 1.5; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .stat-card {
+      background: var(--card);
+      border-radius: var(--radius-sm);
+      padding: 16px 10px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-value { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    .stat-label { font-size: 12px; color: var(--text-secondary); }
+    .stat-card:nth-child(1) { background: var(--green-light); }
+    .stat-card:nth-child(2) { background: var(--blue-light); }
+    .stat-card:nth-child(3) { background: var(--yellow-light); }
+    .stat-clickable { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+    .stat-clickable:active { transform: scale(0.96); box-shadow: 0 2px 10px rgba(74,63,53,0.12); }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .feature-card {
+      background: var(--card);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .feature-card:active { transform: scale(0.98); }
+    .feature-icon {
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .feature-info { min-width: 0; }
+    .feature-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .feature-desc { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .inspiration-section {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+    .inspiration-header {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .inspiration-item {
+      background: var(--bg-soft);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .inspiration-title { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+    .inspiration-text { font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
+
+    .fab {
+      position: fixed;
+      right: 24px;
+      bottom: 28px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--text);
+      color: #fff;
+      border: none;
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 20px rgba(74, 63, 53, 0.25);
+      cursor: pointer;
+      z-index: 90;
+    }
+
+    /* Cards & Lists */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .card-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.6; }
+
+    /* Buttons */
+    .btn {
+      background: var(--text);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary { background: var(--primary); }
+    .btn-green { background: var(--green); color: var(--text); }
+    .btn-blue { background: var(--blue); }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(74,63,53,0.15);
+    }
+    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 10px; }
+
+    /* Forms */
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text-secondary); }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      border: 1px solid rgba(74,63,53,0.12);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+      font-family: inherit;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .form-textarea { min-height: 90px; resize: vertical; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(74,63,53,0.35);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 200;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--card);
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 22px;
+      overflow-y: auto;
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .modal-title { font-size: 18px; font-weight: 700; }
+    .modal-close { background: none; border: none; font-size: 22px; color: var(--text-secondary); cursor: pointer; }
+
+    /* Toggle switch */
+    .toggle {
+      appearance: none;
+      width: 46px; height: 26px;
+      background: #E0D8D0;
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      outline: none;
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle:checked { background: var(--primary); }
+    .toggle:checked::after { transform: translateX(20px); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .mobile-header { display: flex; }
+      .content { padding: 16px; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .stat-card { padding: 14px 6px; }
+      .stat-value { font-size: 20px; }
+      .feature-grid { gap: 10px; }
+      .feature-card { padding: 14px; }
+      .feature-icon { width: 40px; height: 40px; font-size: 20px; }
+      .feature-name { font-size: 14px; }
+    }
+
+    /* Mobile drawer */
+    .drawer-overlay {
+      position: fixed; inset: 0;
+      background: rgba(74,63,53,0.4);
+      z-index: 300;
+      display: none;
+    }
+    .drawer-overlay.active { display: block; }
+    .drawer {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 220px;
+      background: #FFF8F2;
+      z-index: 301;
+      padding: 28px 16px 20px;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+    }
+    .drawer-overlay.active .drawer { transform: translateX(0); }
+    .drawer .nav-items { padding: 0; }
+    .drawer .nav-item { flex-direction: row; gap: 12px; justify-content: flex-start; padding: 12px; }
+    .drawer .nav-icon { margin-bottom: 0; }
+    .drawer .nav-label { font-size: 14px; }
+
+    /* Module specific styles */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .summary-card {
+      background: var(--card);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .summary-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+    .summary-value { font-size: 22px; font-weight: 700; }
+
+    .list-item {
+      background: var(--card);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .list-content { flex: 1; min-width: 0; }
+    .list-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+    .list-meta { font-size: 12px; color: var(--text-secondary); }
+    .list-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: var(--bg);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+
+    .checkbox {
+      width: 22px; height: 22px;
+      border: 2px solid var(--primary);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .checkbox.checked { background: var(--primary); color: #fff; }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: var(--primary-light);
+      color: var(--text);
+      margin-right: 4px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: #EDE8E2;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--green) 100%);
+      border-radius: 5px;
+      transition: width 0.3s ease;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+    .calendar-day { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .calendar-cell {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      background: var(--bg-soft);
+    }
+    .calendar-cell.done { background: var(--green); color: #fff; }
+    .calendar-cell.today { border: 2px solid var(--primary); }
+
+    .water-cups {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .water-cup {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--blue-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .water-cup.filled { background: var(--blue); }
+    .water-cup:active { transform: scale(0.9); }
+
+    .note-card {
+      background: var(--card);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    .note-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .note-body { font-size: 13px; line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap; }
+    .note-footer { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .filter-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: none;
+      background: var(--bg-soft);
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .filter-tab.active { background: var(--text); color: #fff; }
+
+    .amount-income { color: #5DAE7B; }
+    .amount-expense { color: #D8786E; }
+
+    .habit-streak { font-size: 12px; color: var(--primary); font-weight: 600; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 90px;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(74,63,53,0.92);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      z-index: 500;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .section-title { font-size: 15px; font-weight: 700; margin: 18px 0 10px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo">🐑</div>
+        <div class="logo-text">刘何羊</div>
+      </div>
+      <nav class="nav-items">
+        <div class="nav-item active" data-page="home"><span class="nav-icon">🏠</span><span class="nav-label">首页</span></div>
+        <div class="nav-item" data-page="accounting"><span class="nav-icon">💰</span><span class="nav-label">记账</span></div>
+        <div class="nav-item" data-page="plan"><span class="nav-icon">📝</span><span class="nav-label">计划</span></div>
+        <div class="nav-item" data-page="discipline"><span class="nav-icon">🔥</span><span class="nav-label">自律</span></div>
+        <div class="nav-item" data-page="experience"><span class="nav-icon">💡</span><span class="nav-label">经验</span></div>
+        <div class="nav-item" data-page="water"><span class="nav-icon">💧</span><span class="nav-label">喝水</span></div>
+        <div class="nav-item" data-page="memo"><span class="nav-icon">📋</span><span class="nav-label">备忘录</span></div>
+      </nav>
+    </aside>
+
+    <!-- Mobile Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()">
+      <div class="drawer" onclick="event.stopPropagation()">
+        <div class="logo-area">
+          <div class="logo">🐑</div>
+          <div class="logo-text">刘何羊的工作台</div>
+        </div>
+        <nav class="nav-items">
+          <div class="nav-item" data-page="home" onclick="navigate('home');closeDrawer()"><span class="nav-icon">🏠</span><span class="nav-label">首页</span></div>
+          <div class="nav-item" data-page="accounting" onclick="navigate('accounting');closeDrawer()"><span class="nav-icon">💰</span><span class="nav-label">记账</span></div>
+          <div class="nav-item" data-page="plan" onclick="navigate('plan');closeDrawer()"><span class="nav-icon">📝</span><span class="nav-label">计划</span></div>
+          <div class="nav-item" data-page="discipline" onclick="navigate('discipline');closeDrawer()"><span class="nav-icon">🔥</span><span class="nav-label">自律</span></div>
+          <div class="nav-item" data-page="experience" onclick="navigate('experience');closeDrawer()"><span class="nav-icon">💡</span><span class="nav-label">经验</span></div>
+          <div class="nav-item" data-page="water" onclick="navigate('water');closeDrawer()"><span class="nav-icon">💧</span><span class="nav-label">喝水</span></div>
+          <div class="nav-item" data-page="memo" onclick="navigate('memo');closeDrawer()"><span class="nav-icon">📋</span><span class="nav-label">备忘录</span></div>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+      <header class="mobile-header">
+        <div class="mobile-menu-btn" onclick="openDrawer()">☰</div>
+        <div style="font-weight:700;">刘何羊工作台</div>
+        <div style="width:36px;"></div>
+      </header>
+
+      <div class="content" id="content">
+        <!-- Home -->
+        <section class="page active" id="page-home">
+          <div class="home-hero">
+            <div class="home-avatar">🐑</div>
+            <div class="home-name">刘何羊工作台</div>
+            <div class="home-tagline">温柔坚持，复利成长</div>
+            <div class="home-quote">「每一小步，都是成长。」</div>
+          </div>
+
+          <div class="quote-card">
+            <div class="quote-header">
+              <span class="quote-title">💬 每日金句</span>
+              <button class="quote-btn" onclick="refreshQuote()">换一句</button>
+            </div>
+            <div class="quote-text" id="dailyQuote">自律给我自由。</div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card stat-clickable" onclick="navigate('plan')">
+              <div class="stat-value" id="statDone">0</div>
+              <div class="stat-label">今日完成 ›</div>
+            </div>
+            <div class="stat-card stat-clickable" onclick="navigate('plan')">
+              <div class="stat-value" id="statTodo">0</div>
+              <div class="stat-label">待办任务 ›</div>
+            </div>
+            <div class="stat-card stat-clickable" onclick="navigate('accounting')">
+              <div class="stat-value" id="statSave">0%</div>
+              <div class="stat-label">存钱进度 ›</div>
+            </div>
+          </div>
+
+          <div class="feature-grid" id="featureGrid">
+            <!-- filled by JS -->
+          </div>
+
+          <div class="inspiration-section">
+            <div class="inspiration-header">🌸 今日灵感</div>
+            <div id="inspirationList">
+              <div class="inspiration-item">
+                <div class="inspiration-title">今天值得被记录</div>
+                <div class="inspiration-text">哪怕今天只完成了一件小事，也值得给自己一个拥抱。每一小步都是成长。</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Accounting -->
+        <section class="page" id="page-accounting">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">💰 记账</h1>
+              <div class="page-subtitle">收支记录追踪</div>
+            </div>
+            <button class="btn" onclick="openModal('accounting')">+ 记一笔</button>
+          </div>
+          <div class="summary-row">
+            <div class="summary-card">
+              <div class="summary-label">本月收入</div>
+              <div class="summary-value amount-income" id="accIncome">¥0.00</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">本月支出</div>
+              <div class="summary-value amount-expense" id="accExpense">¥0.00</div>
+            </div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-card">
+              <div class="summary-label">本月结余</div>
+              <div class="summary-value" id="accBalance">¥0.00</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">存钱目标</div>
+              <div class="summary-value" id="accGoalDisplay">¥0</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 存钱进度</div>
+            <div class="progress-bar"><div class="progress-fill" id="saveProgress" style="width:0%"></div></div>
+            <div style="margin-top:8px;font-size:12px;color:var(--text-secondary);">
+              已存 <span id="savedAmount">¥0</span> / 目标 <span id="goalAmount">¥0</span>
+            </div>
+          </div>
+          <div class="filter-tabs" id="accFilter">
+            <button class="filter-tab active" data-filter="all">全部</button>
+            <button class="filter-tab" data-filter="expense">支出</button>
+            <button class="filter-tab" data-filter="income">收入</button>
+          </div>
+          <div id="accList"></div>
+        </section>
+
+        <!-- Plan -->
+        <section class="page" id="page-plan">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">📝 计划</h1>
+              <div class="page-subtitle">打卡待办清单</div>
+            </div>
+            <button class="btn" onclick="openModal('plan')">+ 新任务</button>
+          </div>
+          <div class="summary-row">
+            <div class="summary-card">
+              <div class="summary-label">待完成</div>
+              <div class="summary-value" id="planPending">0</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">已完成</div>
+              <div class="summary-value" id="planCompleted">0</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📈 完成进度</div>
+            <div class="progress-bar"><div class="progress-fill" id="planProgress" style="width:0%"></div></div>
+          </div>
+          <div id="planList"></div>
+        </section>
+
+        <!-- Discipline -->
+        <section class="page" id="page-discipline">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">🔥 自律</h1>
+              <div class="page-subtitle">习惯养成打卡</div>
+            </div>
+            <button class="btn" onclick="openModal('discipline')">+ 新习惯</button>
+          </div>
+          <div class="summary-row">
+            <div class="summary-card">
+              <div class="summary-label">今日打卡</div>
+              <div class="summary-value" id="habitToday">0</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">连续坚持</div>
+              <div class="summary-value" id="habitStreak">0 天</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📅 本月打卡日历</div>
+            <div class="calendar-grid" id="habitCalendar"></div>
+          </div>
+          <div id="habitList"></div>
+        </section>
+
+        <!-- Experience -->
+        <section class="page" id="page-experience">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">💡 经验</h1>
+              <div class="page-subtitle">知识库与心得</div>
+            </div>
+            <button class="btn" onclick="openModal('experience')">+ 新笔记</button>
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <input class="form-input" type="text" id="expSearch" placeholder="🔍 搜索经验..." oninput="renderExperience()">
+          </div>
+          <div id="expList"></div>
+        </section>
+
+        <!-- Water -->
+        <section class="page" id="page-water">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">💧 喝水</h1>
+              <div class="page-subtitle">每日饮水记录</div>
+            </div>
+            <button class="btn btn-blue" onclick="addWater()">+ 喝一杯</button>
+          </div>
+          <div class="summary-row">
+            <div class="summary-card">
+              <div class="summary-label">今日饮水</div>
+              <div class="summary-value" id="waterToday">0 ml</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">目标</div>
+              <div class="summary-value" id="waterGoal">2000 ml</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">🥛 今日杯数（点击打卡）</div>
+            <div class="water-cups" id="waterCups"></div>
+            <div class="progress-bar"><div class="progress-fill" id="waterProgress" style="width:0%"></div></div>
+            <div style="margin-top:10px; font-size:12px; color:var(--text-secondary);">
+              每杯 250ml · 点击杯子记录 · <button class="btn btn-sm btn-outline" onclick="resetWater()">重置今日</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📅 近7天记录</div>
+            <div id="waterHistory"></div>
+          </div>
+        </section>
+
+        <!-- Memo -->
+        <section class="page" id="page-memo">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">📋 备忘录</h1>
+              <div class="page-subtitle">随手记录，不怕遗忘</div>
+            </div>
+            <button class="btn" onclick="openModal('memo')">+ 新备忘</button>
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <input class="form-input" type="text" id="memoSearch" placeholder="🔍 搜索备忘录..." oninput="renderMemo()">
+          </div>
+          <div id="memoList"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Floating Action Button (Home inspiration) -->
+  <button class="fab" id="fab" onclick="handleFab()" style="display:none;">+</button>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal" id="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">新建</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ===================== State & Storage =====================
+    const STORE_KEY = 'liuheyang_workbench_v1';
+
+    const DEFAULT_STATE = {
+      accounting: {
+        goal: 12000,
+        records: [
+          { id: 'a1', type: 'income', amount: 5000, category: '工资', note: '本月工资', date: getMonthDate(0) + ' 09:00' },
+          { id: 'a2', type: 'expense', amount: 35, category: '餐饮', note: '午餐', date: getMonthDate(0) + ' 12:30' },
+          { id: 'a3', type: 'expense', amount: 120, category: '交通', note: '打车', date: getMonthDate(-2) + ' 18:45' }
+        ]
+      },
+      plan: {
+        tasks: [
+          { id: 'p1', title: '晨间阅读30分钟', priority: 'high', done: false, date: getMonthDate(0) + ' 07:00', dueDate: todayStr() },
+          { id: 'p2', title: '记账与复盘', priority: 'medium', done: false, date: getMonthDate(0) + ' 21:00', dueDate: todayStr() },
+          { id: 'p3', title: '运动20分钟', priority: 'high', done: false, date: getMonthDate(0) + ' 19:30', dueDate: todayStr() }
+        ]
+      },
+      discipline: {
+        habits: [
+          { id: 'h1', name: '早睡早起', icon: '🌙', color: 'purple', records: [] },
+          { id: 'h2', name: '每日运动', icon: '🏃', color: 'green', records: [] },
+          { id: 'h3', name: '阅读学习', icon: '📚', color: 'blue', records: [] }
+        ]
+      },
+      experience: {
+        notes: [
+          { id: 'e1', title: '记账心得', content: '记账不是为了省钱，而是为了清楚地知道钱花在哪里。', tags: '财务', date: getMonthDate(0) + ' 14:20' },
+          { id: 'e2', title: '自律小技巧', content: '把大目标拆成每天可做的小动作，降低启动成本。', tags: '自律', date: getMonthDate(-1) + ' 22:10' }
+        ]
+      },
+      water: {
+        goal: 2000,
+        cupSize: 250,
+        today: 0,
+        history: []
+      },
+      memo: {
+        memos: [
+          { id: 'm1', title: '待买清单', content: '牛奶、鸡蛋、全麦面包、咖啡豆', pinned: false, important: false, date: getMonthDate(0) + ' 10:15' }
+        ]
+      },
+      home: {
+        quoteIndex: 0,
+        inspirations: [
+          { id: 'i1', title: '今天值得被记录', text: '哪怕今天只完成了一件小事，也值得给自己一个拥抱。每一小步都是成长。', date: getMonthDate(0) + ' 08:30' }
+        ]
+      }
+    };
+
+    let state = loadState();
+    let currentPage = 'home';
+    let modalContext = null;
+
+    function getMonthDate(offsetDays) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      return d.toISOString().split('T')[0];
+    }
+    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function nowStr() { return new Date().toISOString(); }
+    // 精确到分钟的本地时间戳，格式: YYYY-MM-DD HH:mm
+    function nowTimeStr() {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+    // 把任意时间字符串格式化为「MM-DD HH:mm」用于列表展示
+    function formatTimeDisplay(ts) {
+      if (!ts) return '';
+      // 兼容旧的纯日期格式 YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}$/.test(ts)) return ts.slice(5);
+      // YYYY-MM-DD HH:mm -> MM-DD HH:mm
+      const m = ts.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+      if (m) return m[2] + '-' + m[3] + ' ' + m[4] + ':' + m[5];
+      return ts;
+    }
+    function formatDate(d) { return d; }
+    function formatMoney(n) { return '¥' + Number(n).toFixed(2); }
+    function uuid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    }
+    function saveState() {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+
+    // ===================== Quotes =====================
+    const quotes = [
+      '自律给我自由。',
+      '每一小步，都是成长。',
+      '温柔坚持，复利成长。',
+      '种一棵树最好的时间是十年前，其次是现在。',
+      '慢慢来，比较快。',
+      '今天的你，比昨天更好了吗？',
+      '行动是治愈焦虑的良药。',
+      '不积跬步，无以至千里。',
+      '先完成，再完美。',
+      '保持热爱，奔赴山海。'
+    ];
+
+    function refreshQuote() {
+      state.home.quoteIndex = (state.home.quoteIndex + 1) % quotes.length;
+      saveState();
+      document.getElementById('dailyQuote').textContent = quotes[state.home.quoteIndex];
+    }
+
+    // ===================== Navigation =====================
+    const pages = ['home','accounting','plan','discipline','experience','water','memo'];
+    const pageIcons = { home:'🏠', accounting:'💰', plan:'📝', discipline:'🔥', experience:'💡', water:'💧', memo:'📋' };
+    const pageTitles = { home:'首页', accounting:'记账', plan:'计划', discipline:'自律', experience:'经验', water:'喝水', memo:'备忘录' };
+
+    function navigate(page) {
+      currentPage = page;
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+      renderPage(page);
+      const fab = document.getElementById('fab');
+      fab.style.display = page === 'home' ? 'flex' : 'none';
+      // 同步 history，使「返回」键能回到首页
+      if (page !== 'home') {
+        if (location.hash !== '#/sub') {
+          history.pushState({ page }, '', '#/sub');
+        }
+      } else {
+        if (location.hash === '#/sub') {
+          history.replaceState({ page: 'home' }, '', '#/home');
+        }
+      }
+    }
+
+    // ===================== 返回键拦截 =====================
+    // 策略：
+    // 1. 进入子页面时压入一个 history 项
+    // 2. 按返回键（popstate）时，若当前在子页面 -> 回到首页（不退出）
+    // 3. 已在首页时，再按一次返回 -> 提示再按一次退出，并压入一个哨兵 state
+    // 4. 在哨兵窗口内再按返回 -> 真正退出（history.back 触发浏览器关闭/返回）
+    let exitArmed = false;
+    let exitTimer = null;
+
+    function initHistory() {
+      // 初始化一个基础 state
+      if (!history.state || !history.state.page) {
+        history.replaceState({ page: 'home' }, '', location.pathname + location.search);
+      }
+      window.addEventListener('popstate', handlePopstate);
+    }
+
+    function handlePopstate(e) {
+      // 任意 popstate：优先回到首页
+      if (currentPage !== 'home') {
+        // 阻止默认后退，留在 app 内并回到首页
+        // 重新压回一个 home state，防止继续后退退出
+        history.pushState({ page: 'home' }, '', location.pathname + location.search);
+        goHome();
+        return;
+      }
+      // 已在首页
+      if (!exitArmed) {
+        // 第一次返回：武装退出，再压一个哨兵，提示用户
+        exitArmed = true;
+        history.pushState({ exitSentinel: true }, '', location.pathname + location.search);
+        showToast('再按一次返回退出');
+        clearTimeout(exitTimer);
+        exitTimer = setTimeout(() => { exitArmed = false; }, 2000);
+      } else {
+        // 第二次返回：真正退出
+        // 不再压 state，允许 history 继续后退 -> 浏览器关闭/返回上一页
+        exitArmed = false;
+        clearTimeout(exitTimer);
+        // 主动再 back 一次以真正离开
+        history.back();
+      }
+    }
+
+    function goHome() {
+      currentPage = 'home';
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-home').classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'home'));
+      renderHome();
+      document.getElementById('fab').style.display = 'flex';
+      showToast('已返回首页');
+    }
+
+    function renderPage(page) {
+      if (page === 'home') renderHome();
+      if (page === 'accounting') renderAccounting();
+      if (page === 'plan') renderPlan();
+      if (page === 'discipline') renderDiscipline();
+      if (page === 'experience') renderExperience();
+      if (page === 'water') renderWater();
+      if (page === 'memo') renderMemo();
+    }
+
+    function openDrawer() { document.getElementById('drawerOverlay').classList.add('active'); }
+    function closeDrawer() { document.getElementById('drawerOverlay').classList.remove('active'); }
+
+    // ===================== Home =====================
+    function renderHome() {
+      document.getElementById('dailyQuote').textContent = quotes[state.home.quoteIndex];
+      const today = todayStr();
+      const done = state.plan.tasks.filter(t => t.done).length;
+      const pending = state.plan.tasks.filter(t => !t.done).length;
+      const income = state.accounting.records.filter(r => r.type === 'income' && r.date.startsWith(today.slice(0,7))).reduce((s, r) => s + r.amount, 0);
+      const expense = state.accounting.records.filter(r => r.type === 'expense' && r.date.startsWith(today.slice(0,7))).reduce((s, r) => s + r.amount, 0);
+      const saved = Math.max(0, income - expense);
+      const savePct = state.accounting.goal > 0 ? Math.min(100, Math.round(saved / state.accounting.goal * 100)) : 0;
+
+      document.getElementById('statDone').textContent = done;
+      document.getElementById('statTodo').textContent = pending;
+      document.getElementById('statSave').textContent = savePct + '%';
+
+      const features = [
+        { page:'plan', icon:'📝', name:'每日计划', desc:`打卡待办清单 · ${done}/${state.plan.tasks.length}`, color: 'var(--green-light)' },
+        { page:'discipline', icon:'🔥', name:'自律打卡', desc:`今日打卡 · ${state.discipline.habits.filter(h => isHabitDoneToday(h)).length}/${state.discipline.habits.length}`, color: 'var(--purple-light)' },
+        { page:'experience', icon:'💡', name:'经验库', desc:`知识笔记 · ${state.experience.notes.length} 条`, color: 'var(--blue-light)' },
+        { page:'accounting', icon:'💰', name:'存钱计划', desc:`收支记录追踪 · ${formatMoney(saved)}`, color: 'var(--yellow-light)' },
+        { page:'water', icon:'💧', name:'喝水记录', desc:`今日饮水 · ${state.water.today}ml`, color: '#E3F2FD' },
+        { page:'memo', icon:'📋', name:'备忘录', desc:`随手记录 · ${state.memo.memos.length} 条`, color: '#FFF3E0' }
+      ];
+      document.getElementById('featureGrid').innerHTML = features.map(f => `
+        <div class="feature-card" onclick="navigate('${f.page}')">
+          <div class="feature-icon" style="background:${f.color}">${f.icon}</div>
+          <div class="feature-info">
+            <div class="feature-name">${f.name}</div>
+            <div class="feature-desc">${f.desc}</div>
+          </div>
+        </div>
+      `).join('');
+
+      const list = document.getElementById('inspirationList');
+      if (!state.home.inspirations.length) {
+        list.innerHTML = '<div class="empty-state">点击右下角 + 记录今日灵感</div>';
+      } else {
+        list.innerHTML = state.home.inspirations.slice().reverse().map(i => `
+          <div class="inspiration-item">
+            <div class="inspiration-title">${i.title}</div>
+            <div class="inspiration-text">${i.text}</div>
+            <div style="margin-top:6px;font-size:11px;color:var(--text-secondary);">🕐 ${formatTimeDisplay(i.date)}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function handleFab() {
+      modalContext = { type: 'inspiration' };
+      document.getElementById('modalTitle').textContent = '✨ 记录今日灵感';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="inspTitle" value="今天值得被记录"></div>
+        <div class="form-group"><label class="form-label">内容</label><textarea class="form-textarea" id="inspText" placeholder="写下今天的感悟..."></textarea></div>
+        <button class="btn" style="width:100%" onclick="saveInspiration()">保存</button>
+      `;
+      openModalOverlay();
+    }
+
+    function saveInspiration() {
+      const title = document.getElementById('inspTitle').value.trim();
+      const text = document.getElementById('inspText').value.trim();
+      if (!title || !text) return showToast('请填写完整');
+      state.home.inspirations.push({ id: uuid(), title, text, date: nowTimeStr() });
+      saveState();
+      closeModal();
+      renderHome();
+      showToast('已记录今日灵感');
+    }
+
+    // ===================== Accounting =====================
+    function renderAccounting() {
+      const month = todayStr().slice(0, 7);
+      const income = state.accounting.records.filter(r => r.type === 'income' && r.date.startsWith(month)).reduce((s, r) => s + r.amount, 0);
+      const expense = state.accounting.records.filter(r => r.type === 'expense' && r.date.startsWith(month)).reduce((s, r) => s + r.amount, 0);
+      const saved = Math.max(0, income - expense);
+      const pct = state.accounting.goal > 0 ? Math.min(100, Math.round(saved / state.accounting.goal * 100)) : 0;
+      document.getElementById('accIncome').textContent = formatMoney(income);
+      document.getElementById('accExpense').textContent = formatMoney(expense);
+      document.getElementById('accBalance').textContent = formatMoney(income - expense);
+      document.getElementById('accGoalDisplay').textContent = formatMoney(state.accounting.goal);
+      document.getElementById('savedAmount').textContent = formatMoney(saved);
+      document.getElementById('goalAmount').textContent = formatMoney(state.accounting.goal);
+      document.getElementById('saveProgress').style.width = pct + '%';
+
+      const filter = document.querySelector('#accFilter .filter-tab.active').dataset.filter;
+      const records = state.accounting.records.filter(r => filter === 'all' || r.type === filter).slice().reverse();
+      const list = document.getElementById('accList');
+      if (!records.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">💰</div>暂无记录，记一笔吧</div>';
+      } else {
+        list.innerHTML = records.map(r => `
+          <div class="list-item">
+            <div class="list-content">
+              <div class="list-title">${r.category} <span class="${r.type === 'income' ? 'amount-income' : 'amount-expense'}">${r.type === 'income' ? '+' : '-'}${formatMoney(r.amount)}</span></div>
+              <div class="list-meta">${formatTimeDisplay(r.date)} · ${r.note || '无备注'}</div>
+            </div>
+            <div class="list-actions">
+              <button class="icon-btn" onclick="deleteAccounting('${r.id}')">🗑</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    document.querySelectorAll('#accFilter .filter-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#accFilter .filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderAccounting();
+      });
+    });
+
+    function openAccountingModal() {
+      modalContext = { type: 'accounting' };
+      document.getElementById('modalTitle').textContent = '💰 记一笔';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="form-group">
+          <label class="form-label">类型</label>
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setAccType(this,'expense')">支出</button>
+            <button class="filter-tab" onclick="setAccType(this,'income')">收入</button>
+          </div>
+          <input type="hidden" id="accType" value="expense">
+        </div>
+        <div class="form-group"><label class="form-label">金额</label><input class="form-input" type="number" id="accAmount" placeholder="0.00" step="0.01"></div>
+        <div class="form-group"><label class="form-label">分类</label><input class="form-input" type="text" id="accCategory" placeholder="如：餐饮、工资"></div>
+        <div class="form-group"><label class="form-label">备注</label><input class="form-input" type="text" id="accNote" placeholder="可选"></div>
+        <div class="form-group"><label class="form-label">时间</label><input class="form-input" type="datetime-local" id="accDate" value="${nowTimeStr().replace(' ','T')}"></div>
+        <div class="form-group"><label class="form-label">存钱目标</label><input class="form-input" type="number" id="accGoal" value="${state.accounting.goal}" placeholder="12000"></div>
+        <button class="btn" style="width:100%" onclick="saveAccounting()">保存</button>
+      `;
+      openModalOverlay();
+    }
+    function setAccType(btn, type) {
+      btn.parentElement.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('accType').value = type;
+    }
+    function saveAccounting() {
+      const type = document.getElementById('accType').value;
+      const amount = parseFloat(document.getElementById('accAmount').value);
+      const category = document.getElementById('accCategory').value.trim();
+      const note = document.getElementById('accNote').value.trim();
+      const rawDate = document.getElementById('accDate').value || nowTimeStr();
+      const date = rawDate.replace('T', ' '); // datetime-local -> YYYY-MM-DD HH:mm
+      const goal = parseFloat(document.getElementById('accGoal').value) || 0;
+      if (!amount || amount <= 0) return showToast('请输入有效金额');
+      if (!category) return showToast('请输入分类');
+      state.accounting.goal = goal;
+      state.accounting.records.push({ id: uuid(), type, amount, category, note, date });
+      saveState();
+      closeModal();
+      renderAccounting();
+      showToast('已保存账单');
+    }
+    function deleteAccounting(id) {
+      if (!confirm('确定删除这条记录？')) return;
+      state.accounting.records = state.accounting.records.filter(r => r.id !== id);
+      saveState();
+      renderAccounting();
+      showToast('已删除');
+    }
+
+    // ===================== Plan =====================
+    function renderPlan() {
+      const tasks = state.plan.tasks.slice();
+      document.getElementById('planPending').textContent = tasks.filter(t => !t.done).length;
+      document.getElementById('planCompleted').textContent = tasks.filter(t => t.done).length;
+      const pct = tasks.length ? Math.round(tasks.filter(t => t.done).length / tasks.length * 100) : 0;
+      document.getElementById('planProgress').style.width = pct + '%';
+
+      const list = document.getElementById('planList');
+      if (!tasks.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div>还没有任务，添加一个吧</div>';
+      } else {
+        list.innerHTML = tasks.map(t => `
+          <div class="list-item">
+            <div class="checkbox ${t.done ? 'checked' : ''}" onclick="toggleTask('${t.id}')">${t.done ? '✓' : ''}</div>
+            <div class="list-content">
+              <div class="list-title" style="${t.done ? 'text-decoration:line-through;color:var(--text-secondary)' : ''}">${t.title}</div>
+              <div class="list-meta">${priorityLabel(t.priority)} · 创建 ${formatTimeDisplay(t.date)}</div>
+            </div>
+            <div class="list-actions">
+              <button class="icon-btn" onclick="deleteTask('${t.id}')">🗑</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+    function priorityLabel(p) {
+      const map = { high: '🔴 高优先级', medium: '🟡 中优先级', low: '🟢 低优先级' };
+      return map[p] || p;
+    }
+    function toggleTask(id) {
+      const t = state.plan.tasks.find(x => x.id === id);
+      if (t) { t.done = !t.done; saveState(); renderPlan(); showToast(t.done ? '完成一项任务' : '已取消完成'); }
+    }
+    function deleteTask(id) {
+      state.plan.tasks = state.plan.tasks.filter(t => t.id !== id);
+      saveState(); renderPlan(); showToast('已删除');
+    }
+    function openPlanModal() {
+      modalContext = { type: 'plan' };
+      document.getElementById('modalTitle').textContent = '📝 新任务';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="form-group"><label class="form-label">任务内容</label><input class="form-input" id="planTitle" placeholder="要做什么？"></div>
+        <div class="form-group"><label class="form-label">优先级</label>
+          <select class="form-select" id="planPriority">
+            <option value="high">高优先级</option>
+            <option value="medium" selected>中优先级</option>
+            <option value="low">低优先级</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">截止日期</label><input class="form-input" type="date" id="planDue" value="${todayStr()}"></div>
+        <button class="btn" style="width:100%" onclick="savePlan()">保存</button>
+      `;
+      openModalOverlay();
+    }
+    function savePlan() {
+      const title = document.getElementById('planTitle').value.trim();
+      const priority = document.getElementById('planPriority').value;
+      const dueDate = document.getElementById('planDue').value;
+      if (!title) return showToast('请输入任务内容');
+      state.plan.tasks.push({ id: uuid(), title, priority, done: false, date: nowTimeStr(), dueDate });
+      saveState(); closeModal(); renderPlan(); showToast('任务已添加');
+    }
+
+    // ===================== Discipline =====================
+    function isHabitDoneToday(habit) {
+      return habit.records.some(r => r.date === todayStr() && r.done);
+    }
+    function renderDiscipline() {
+      const today = todayStr();
+      const habits = state.discipline.habits;
+      const todayDone = habits.filter(h => isHabitDoneToday(h)).length;
+      document.getElementById('habitToday').textContent = todayDone;
+      let maxStreak = 0;
+      habits.forEach(h => {
+        const s = calcStreak(h);
+        if (s > maxStreak) maxStreak = s;
+      });
+      document.getElementById('habitStreak').textContent = maxStreak + ' 天';
+
+      // Calendar
+      const cal = document.getElementById('habitCalendar');
+      const yearMonth = today.slice(0, 7);
+      const daysInMonth = new Date(parseInt(yearMonth.split('-')[0]), parseInt(yearMonth.split('-')[1]), 0).getDate();
+      const firstDay = new Date(parseInt(yearMonth.split('-')[0]), parseInt(yearMonth.split('-')[1]) - 1, 1).getDay();
+      let html = ['日','一','二','三','四','五','六'].map(d => `<div class="calendar-day">${d}</div>`).join('');
+      for (let i = 0; i < firstDay; i++) html += '<div class="calendar-cell"></div>';
+      for (let d = 1; d <= daysInMonth; d++) {
+        const ds = yearMonth + '-' + String(d).padStart(2, '0');
+        const anyDone = habits.some(h => h.records.some(r => r.date === ds && r.done));
+        const isToday = ds === today;
+        html += `<div class="calendar-cell ${anyDone ? 'done' : ''} ${isToday ? 'today' : ''}">${d}</div>`;
+      }
+      cal.innerHTML = html;
+
+      const list = document.getElementById('habitList');
+      if (!habits.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">🔥</div>还没有习惯，添加一个吧</div>';
+      } else {
+        list.innerHTML = habits.map(h => {
+          const done = isHabitDoneToday(h);
+          const streak = calcStreak(h);
+          return `
+          <div class="list-item">
+            <div class="feature-icon" style="background:var(--${h.color}-light)">${h.icon}</div>
+            <div class="list-content">
+              <div class="list-title" style="${done ? 'text-decoration:line-through;color:var(--text-secondary)' : ''}">${h.name}</div>
+              <div class="list-meta"><span class="habit-streak">🔥 连续 ${streak} 天</span> · ${done ? '今日已打卡' : '今日未打卡'}</div>
+            </div>
+            <div class="list-actions">
+              <button class="icon-btn" onclick="toggleHabit('${h.id}')" style="background:${done ? 'var(--green)' : 'var(--bg)'}; color:${done ? '#fff' : 'var(--text-secondary)'};">${done ? '✓' : '✓'}</button>
+              <button class="icon-btn" onclick="deleteHabit('${h.id}')">🗑</button>
+            </div>
+          </div>
+        `}).join('');
+      }
+    }
+    function calcStreak(habit) {
+      let streak = 0;
+      const d = new Date();
+      while (true) {
+        const ds = d.toISOString().split('T')[0];
+        if (habit.records.some(r => r.date === ds && r.done)) { streak++; d.setDate(d.getDate() - 1); }
+        else break;
+      }
+      return streak;
+    }
+    function toggleHabit(id) {
+      const h = state.discipline.habits.find(x => x.id === id);
+      if (!h) return;
+      const today = todayStr();
+      const rec = h.records.find(r => r.date === today);
+      if (rec) rec.done = !rec.done;
+      else h.records.push({ date: today, done: true });
+      saveState(); renderDiscipline(); showToast(rec && !rec.done ? '已取消打卡' : '打卡成功');
+    }
+    function deleteHabit(id) {
+      state.discipline.habits = state.discipline.habits.filter(h => h.id !== id);
+      saveState(); renderDiscipline(); showToast('已删除');
+    }
+    function openDisciplineModal() {
+      modalContext = { type: 'discipline' };
+      document.getElementById('modalTitle').textContent = '🔥 新习惯';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="form-group"><label class="form-label">习惯名称</label><input class="form-input" id="habitName" placeholder="如：早起、阅读"></div>
+        <div class="form-group"><label class="form-label">图标</label><input class="form-input" id="habitIcon" value="🔥" maxlength="2"></div>
+        <div class="form-group"><label class="form-label">颜色</label>
+          <select class="form-select" id="habitColor">
+            <option value="green">绿色</option>
+            <option value="blue">蓝色</option>
+            <option value="purple">紫色</option>
+            <option value="yellow">黄色</option>
+            <option value="primary">粉色</option>
+          </select>
+        </div>
+        <button class="btn" style="width:100%" onclick="saveHabit()">保存</button>
+      `;
+      openModalOverlay();
+    }
+    function saveHabit() {
+      const name = document.getElementById('habitName').value.trim();
+      const icon = document.getElementById('habitIcon').value.trim() || '🔥';
+      const color = document.getElementById('habitColor').value;
+      if (!name) return showToast('请输入习惯名称');
+      state.discipline.habits.push({ id: uuid(), name, icon, color, records: [] });
+      saveState(); closeModal(); renderDiscipline(); showToast('习惯已添加');
+    }
+
+    // ===================== Experience =====================
+    function renderExperience() {
+      const q = document.getElementById('expSearch').value.trim().toLowerCase();
+      const notes = state.experience.notes.filter(n => !q || n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q) || n.tags.toLowerCase().includes(q)).slice().reverse();
+      const list = document.getElementById('expList');
+      if (!notes.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">💡</div>还没有经验笔记</div>';
+      } else {
+        list.innerHTML = notes.map(n => `
+          <div class="note-card">
+            <div class="note-title">${n.title}</div>
+            <div class="note-body">${n.content}</div>
+            <div class="note-footer">
+              <div><span class="tag">${n.tags || '未分类'}</span> <span style="font-size:11px;color:var(--text-secondary)">🕐 ${formatTimeDisplay(n.date)}</span></div>
+              <div class="list-actions">
+                <button class="icon-btn" onclick="openExperienceModal('${n.id}')">✏</button>
+                <button class="icon-btn" onclick="deleteExperience('${n.id}')">🗑</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+    function openExperienceModal(id) {
+      const isEdit = !!id;
+      const n = isEdit ? state.experience.notes.find(x => x.id === id) : { title:'', content:'', tags:'' };
+      modalContext = { type: 'experience', id };
+      document.getElementById('modalTitle').textContent = isEdit ? '✏ 编辑笔记' : '💡 新笔记';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="expTitle" value="${n.title}" placeholder="笔记标题"></div>
+        <div class="form-group"><label class="form-label">标签</label><input class="form-input" id="expTags" value="${n.tags}" placeholder="如：学习、工作"></div>
+        <div class="form-group"><label class="form-label">内容</label><textarea class="form-textarea" id="expContent" placeholder="写下你的经验与心得...">${n.content}</textarea></div>
+        <button class="btn" style="width:100%" onclick="saveExperience()">保存</button>
+      `;
+      openModalOverlay();
+    }
+    function saveExperience() {
+      const title = document.getElementById('expTitle').value.trim();
+      const tags = document.getElementById('expTags').value.trim();
+      const content = document.getElementById('expContent').value.trim();
+      if (!title || !content) return showToast('请填写标题和内容');
+      if (modalContext.id) {
+        const n = state.experience.notes.find(x => x.id === modalContext.id);
+        n.title = title; n.tags = tags; n.content = content; n.date = nowTimeStr();
+      } else {
+        state.experience.notes.push({ id: uuid(), title, tags, content, date: nowTimeStr() });
+      }
+      saveState(); closeModal(); renderExperience(); showToast('笔记已保存');
+    }
+    function deleteExperience(id) {
+      if (!confirm('确定删除这条笔记？')) return;
+      state.experience.notes = state.experience.notes.filter(n => n.id !== id);
+      saveState(); renderExperience(); showToast('已删除');
+    }
+
+    // ===================== Water =====================
+    function renderWater() {
+      document.getElementById('waterToday').textContent = state.water.today + ' ml';
+      document.getElementById('waterGoal').textContent = state.water.goal + ' ml';
+      const cups = Math.ceil(state.water.goal / state.water.cupSize);
+      const filled = Math.floor(state.water.today / state.water.cupSize);
+      const cupsEl = document.getElementById('waterCups');
+      let html = '';
+      for (let i = 0; i < Math.max(cups, filled); i++) {
+        html += `<div class="water-cup ${i < filled ? 'filled' : ''}" onclick="addWaterByCup(${i})">💧</div>`;
+      }
+      cupsEl.innerHTML = html;
+      const pct = Math.min(100, Math.round(state.water.today / state.water.goal * 100));
+      document.getElementById('waterProgress').style.width = pct + '%';
+
+      const hist = document.getElementById('waterHistory');
+      const history = state.water.history.slice().reverse().slice(0, 7);
+      if (!history.length && state.water.today === 0) {
+        hist.innerHTML = '<div class="empty-state">暂无记录，喝一杯吧</div>';
+      } else {
+        const todayEntry = { date: todayStr(), amount: state.water.today };
+        const display = history[0]?.date === todayStr() ? history : [todayEntry, ...history].slice(0, 7);
+        hist.innerHTML = display.map(h => `
+          <div class="list-item">
+            <div class="list-content">
+              <div class="list-title">${h.date}</div>
+              <div class="list-meta">${h.amount} ml / ${state.water.goal} ml</div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+    function addWater() {
+      state.water.today += state.water.cupSize;
+      saveWaterHistory();
+      saveState(); renderWater(); showToast(`已喝 ${state.water.cupSize}ml`);
+    }
+    function addWaterByCup(index) {
+      const filled = Math.floor(state.water.today / state.water.cupSize);
+      if (index < filled) {
+        state.water.today = Math.max(0, state.water.today - state.water.cupSize);
+      } else {
+        state.water.today = (index + 1) * state.water.cupSize;
+      }
+      saveWaterHistory();
+      saveState(); renderWater(); showToast(`今日饮水 ${state.water.today}ml`);
+    }
+    function saveWaterHistory() {
+      const today = todayStr();
+      const rec = state.water.history.find(h => h.date === today);
+      if (rec) rec.amount = state.water.today;
+      else state.water.history.push({ date: today, amount: state.water.today });
+    }
+    function resetWater() {
+      if (!confirm('确定重置今日饮水记录？')) return;
+      state.water.today = 0;
+      saveWaterHistory();
+      saveState(); renderWater(); showToast('已重置');
+    }
+
+    // ===================== Memo =====================
+    function renderMemo() {
+      const q = document.getElementById('memoSearch').value.trim().toLowerCase();
+      let memos = state.memo.memos.filter(m => !q || m.title.toLowerCase().includes(q) || m.content.toLowerCase().includes(q));
+      memos = memos.sort((a, b) => (b.pinned - a.pinned) || new Date(b.date) - new Date(a.date));
+      const list = document.getElementById('memoList');
+      if (!memos.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>还没有备忘录</div>';
+      } else {
+        list.innerHTML = memos.map(m => `
+          <div class="note-card" style="${m.important ? 'border-left:4px solid var(--primary);' : ''}">
+            <div class="note-title">${m.pinned ? '📌 ' : ''}${m.important ? '❗ ' : ''}${m.title}</div>
+            <div class="note-body">${m.content}</div>
+            <div class="note-footer">
+              <span style="font-size:11px;color:var(--text-secondary)">🕐 ${formatTimeDisplay(m.date)}</span>
+              <div class="list-actions">
+                <button class="icon-btn" onclick="togglePinMemo('${m.id}')">📌</button>
+                <button class="icon-btn" onclick="openMemoModal('${m.id}')">✏</button>
+                <button class="icon-btn" onclick="deleteMemo('${m.id}')">🗑</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+    function openMemoModal(id) {
+      const isEdit = !!id;
+      const m = isEdit ? state.memo.memos.find(x => x.id === id) : { title:'', content:'', pinned:false, important:false };
+      modalContext = { type: 'memo', id };
+      document.getElementById('modalTitle').textContent = isEdit ? '✏ 编辑备忘' : '📋 新备忘';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="memoTitle" value="${m.title}" placeholder="备忘标题"></div>
+        <div class="form-group"><label class="form-label">内容</label><textarea class="form-textarea" id="memoContent" placeholder="写下要记的事...">${m.content}</textarea></div>
+        <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="memoImportant" ${m.important ? 'checked' : ''} style="width:18px;height:18px;">
+          <label for="memoImportant" style="font-size:14px;">标记为重要</label>
+        </div>
+        <button class="btn" style="width:100%" onclick="saveMemo()">保存</button>
+      `;
+      openModalOverlay();
+    }
+    function saveMemo() {
+      const title = document.getElementById('memoTitle').value.trim();
+      const content = document.getElementById('memoContent').value.trim();
+      const important = document.getElementById('memoImportant').checked;
+      if (!title && !content) return showToast('请填写内容');
+      if (modalContext.id) {
+        const m = state.memo.memos.find(x => x.id === modalContext.id);
+        m.title = title || '无标题'; m.content = content; m.important = important; m.date = nowTimeStr();
+      } else {
+        state.memo.memos.push({ id: uuid(), title: title || '无标题', content, pinned: false, important, date: nowTimeStr() });
+      }
+      saveState(); closeModal(); renderMemo(); showToast('备忘已保存');
+    }
+    function togglePinMemo(id) {
+      const m = state.memo.memos.find(x => x.id === id);
+      if (m) { m.pinned = !m.pinned; saveState(); renderMemo(); showToast(m.pinned ? '已置顶' : '已取消置顶'); }
+    }
+    function deleteMemo(id) {
+      if (!confirm('确定删除这条备忘？')) return;
+      state.memo.memos = state.memo.memos.filter(m => m.id !== id);
+      saveState(); renderMemo(); showToast('已删除');
+    }
+
+    // ===================== Modal / Toast =====================
+    function openModal(type) {
+      if (type === 'accounting') openAccountingModal();
+      if (type === 'plan') openPlanModal();
+      if (type === 'discipline') openDisciplineModal();
+      if (type === 'experience') openExperienceModal();
+      if (type === 'memo') openMemoModal();
+    }
+    function openModalOverlay() {
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      modalContext = null;
+    }
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    // ===================== Init =====================
+    document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+      item.addEventListener('click', () => navigate(item.dataset.page));
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // Migrate today's water into history if exists from older state
+    saveWaterHistory();
+    saveState();
+    initHistory();
+    navigate('home');
+  </script>
+</body>
+</html>
