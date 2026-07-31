@@ -982,29 +982,22 @@
       renderPage(page);
       const fab = document.getElementById('fab');
       fab.style.display = page === 'home' ? 'flex' : 'none';
-      // 同步 history，使「返回」键能回到首页
+      // 同步 history：进入子页面压入 state，便于返回键回到首页
       if (page !== 'home') {
-        if (location.hash !== '#/sub') {
-          history.pushState({ page }, '', '#/sub');
-        }
-      } else {
-        if (location.hash === '#/sub') {
-          history.replaceState({ page: 'home' }, '', '#/home');
-        }
+        history.pushState({ page }, '', location.pathname + location.search);
       }
     }
 
-    // ===================== 返回键拦截 =====================
+    // ===================== 返回键拦截（简化版） =====================
     // 策略：
     // 1. 进入子页面时压入一个 history 项
-    // 2. 按返回键（popstate）时，若当前在子页面 -> 回到首页（不退出）
-    // 3. 已在首页时，再按一次返回 -> 提示再按一次退出，并压入一个哨兵 state
-    // 4. 在哨兵窗口内再按返回 -> 真正退出（history.back 触发浏览器关闭/返回）
+    // 2. 在子页面按返回 -> 回到首页（不提示）
+    // 3. 在首页按返回 -> 提示「再按一次退出」，2 秒内再按才退出
     let exitArmed = false;
     let exitTimer = null;
 
     function initHistory() {
-      // 初始化一个基础 state
+      // 初始页面 replace 为 home state
       if (!history.state || !history.state.page) {
         history.replaceState({ page: 'home' }, '', location.pathname + location.search);
       }
@@ -1012,28 +1005,25 @@
     }
 
     function handlePopstate(e) {
-      // 任意 popstate：优先回到首页
+      // 子页面返回：直接回到首页，不产生额外 toast
       if (currentPage !== 'home') {
-        // 阻止默认后退，留在 app 内并回到首页
-        // 重新压回一个 home state，防止继续后退退出
-        history.pushState({ page: 'home' }, '', location.pathname + location.search);
         goHome();
+        // 把当前历史条目替换为 home，避免 history 栈混乱
+        history.replaceState({ page: 'home' }, '', location.pathname + location.search);
         return;
       }
-      // 已在首页
+
+      // 已经在首页
       if (!exitArmed) {
-        // 第一次返回：武装退出，再压一个哨兵，提示用户
         exitArmed = true;
-        history.pushState({ exitSentinel: true }, '', location.pathname + location.search);
         showToast('再按一次返回退出');
+        // 压入一个 sentinel，让下一次返回还能被拦截
+        history.pushState({ page: 'home', exitSentinel: true }, '', location.pathname + location.search);
         clearTimeout(exitTimer);
         exitTimer = setTimeout(() => { exitArmed = false; }, 2000);
       } else {
-        // 第二次返回：真正退出
-        // 不再压 state，允许 history 继续后退 -> 浏览器关闭/返回上一页
         exitArmed = false;
         clearTimeout(exitTimer);
-        // 主动再 back 一次以真正离开
         history.back();
       }
     }
@@ -1045,7 +1035,7 @@
       document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'home'));
       renderHome();
       document.getElementById('fab').style.display = 'flex';
-      showToast('已返回首页');
+      // 不再提示「已返回首页」
     }
 
     function renderPage(page) {
