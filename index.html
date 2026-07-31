@@ -44,15 +44,16 @@
 
     /* Sidebar */
     .sidebar {
-      width: 88px;
+      width: 96px;
       background: #FFF8F2;
       border-right: 1px solid rgba(244, 166, 152, 0.15);
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 28px 0 20px;
+      padding: 20px 0 16px;
       z-index: 100;
       flex-shrink: 0;
+      overflow-y: auto;
     }
     .logo-area {
       display: flex;
@@ -70,13 +71,13 @@
       margin-bottom: 6px;
     }
     .logo-text { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
-    .nav-items { flex: 1; display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 0 10px; }
+    .nav-items { flex: 1; display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 0 8px; overflow-y: auto; }
     .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 10px 4px;
+      padding: 8px 4px;
       border-radius: var(--radius-sm);
       cursor: pointer;
       transition: all 0.2s ease;
@@ -85,8 +86,8 @@
     .nav-item:hover { background: rgba(244, 166, 152, 0.08); }
     .nav-item.active { background: var(--text); color: #fff; }
     .nav-item.active .nav-icon { filter: brightness(0) invert(1); }
-    .nav-icon { font-size: 22px; margin-bottom: 4px; transition: filter 0.2s; }
-    .nav-label { font-size: 11px; font-weight: 500; }
+    .nav-icon { font-size: 20px; margin-bottom: 2px; transition: filter 0.2s; }
+    .nav-label { font-size: 10px; font-weight: 500; }
 
     /* Main */
     .main {
@@ -715,6 +716,9 @@
         <div class="nav-item" data-page="experience"><span class="nav-icon">💡</span><span class="nav-label">经验</span></div>
         <div class="nav-item" data-page="water"><span class="nav-icon">💧</span><span class="nav-label">喝水</span></div>
         <div class="nav-item" data-page="memo"><span class="nav-icon">📋</span><span class="nav-label">备忘录</span></div>
+        <div class="nav-item" data-page="review"><span class="nav-icon">📊</span><span class="nav-label">复盘</span></div>
+        <div class="nav-item" data-page="diet"><span class="nav-icon">🍽️</span><span class="nav-label">饮食</span></div>
+        <div class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span><span class="nav-label">设置</span></div>
       </nav>
     </aside>
 
@@ -733,6 +737,9 @@
           <div class="nav-item" data-page="experience" onclick="navigate('experience');closeDrawer()"><span class="nav-icon">💡</span><span class="nav-label">经验</span></div>
           <div class="nav-item" data-page="water" onclick="navigate('water');closeDrawer()"><span class="nav-icon">💧</span><span class="nav-label">喝水</span></div>
           <div class="nav-item" data-page="memo" onclick="navigate('memo');closeDrawer()"><span class="nav-icon">📋</span><span class="nav-label">备忘录</span></div>
+          <div class="nav-item" data-page="review" onclick="navigate('review');closeDrawer()"><span class="nav-icon">📊</span><span class="nav-label">复盘</span></div>
+          <div class="nav-item" data-page="diet" onclick="navigate('diet');closeDrawer()"><span class="nav-icon">🍽️</span><span class="nav-label">饮食</span></div>
+          <div class="nav-item" data-page="settings" onclick="navigate('settings');closeDrawer()"><span class="nav-icon">⚙️</span><span class="nav-label">设置</span></div>
         </nav>
       </div>
     </div>
@@ -951,6 +958,91 @@
           </div>
           <div id="memoList"></div>
         </section>
+
+        <!-- Weekly Review -->
+        <section class="page" id="page-review">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">📊 每周复盘</h1>
+              <div class="page-subtitle">回顾与反思，持续成长</div>
+            </div>
+            <button class="btn" onclick="openModal('review')">+ 写复盘</button>
+          </div>
+          <div class="summary-row">
+            <div class="summary-card">
+              <div class="summary-label">本周评分</div>
+              <div class="summary-value" id="reviewScore">--</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">已复盘</div>
+              <div class="summary-value" id="reviewCount">0 周</div>
+            </div>
+          </div>
+          <div id="reviewList"></div>
+        </section>
+
+        <!-- Diet -->
+        <section class="page" id="page-diet">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">🍽️ 饮食记录</h1>
+              <div class="page-subtitle">记录每一餐，吃得健康</div>
+            </div>
+            <button class="btn" onclick="openModal('diet')">+ 记一餐</button>
+          </div>
+          <div class="summary-row">
+            <div class="summary-card">
+              <div class="summary-label">今日餐数</div>
+              <div class="summary-value" id="dietCount">0</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">今日热量</div>
+              <div class="summary-value" id="dietCal">0 kcal</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">🍳 今日饮食概览</div>
+            <div id="dietOverview"></div>
+          </div>
+          <div id="dietList"></div>
+        </section>
+
+        <!-- Settings -->
+        <section class="page" id="page-settings">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">⚙️ 设置</h1>
+              <div class="page-subtitle">个性化与数据管理</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">👤 个人设置</div>
+            <div class="form-group"><label class="form-label">你的名字</label><input class="form-input" id="setName" value="" placeholder="刘何羊"></div>
+            <div class="form-group"><label class="form-label">存钱目标 (元/月)</label><input class="form-input" type="number" id="setSaveGoal" value="12000"></div>
+            <div class="form-group"><label class="form-label">每日喝水目标 (ml)</label><input class="form-input" type="number" id="setWaterGoal" value="2000"></div>
+            <button class="btn" style="width:100%" onclick="saveSettings()">💾 保存设置</button>
+          </div>
+          <div class="card">
+            <div class="card-title">📦 数据管理</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn btn-green" onclick="exportData()">📤 导出数据</button>
+              <button class="btn btn-blue" onclick="document.getElementById('importFile').click()">📥 导入数据</button>
+              <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+            </div>
+            <div style="margin-top:12px;">
+              <button class="btn btn-outline" style="color:#D8786E;border-color:#D8786E;" onclick="clearAllData()">🗑 清除所有数据</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">ℹ️ 关于</div>
+            <div style="font-size:13px;line-height:1.8;color:var(--text-secondary);">
+              <div>🐑 刘何羊的工作台 v1.0</div>
+              <div>个人效率与生活管理工具</div>
+              <div>数据存储在浏览器本地，安全私密</div>
+              <div style="margin-top:8px;font-size:11px;">© 2025 刘何羊 · 温柔坚持，复利成长</div>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   </div>
@@ -1014,6 +1106,17 @@
         memos: [
           { id: 'm1', title: '待买清单', content: '牛奶、鸡蛋、全麦面包、咖啡豆', pinned: false, important: false, media: [], date: getMonthDate(0) + ' 10:15' }
         ]
+      },
+      review: {
+        reviews: []
+      },
+      diet: {
+        records: []
+      },
+      settings: {
+        name: '刘何羊',
+        saveGoal: 12000,
+        waterGoal: 2000
       },
       home: {
         quoteIndex: 0,
@@ -1086,9 +1189,9 @@
     }
 
     // ===================== Navigation =====================
-    const pages = ['home','accounting','plan','discipline','experience','water','memo'];
-    const pageIcons = { home:'🏠', accounting:'💰', plan:'📝', discipline:'🔥', experience:'💡', water:'💧', memo:'📋' };
-    const pageTitles = { home:'首页', accounting:'记账', plan:'计划', discipline:'自律', experience:'经验', water:'喝水', memo:'备忘录' };
+    const pages = ['home','accounting','plan','discipline','experience','water','memo','review','diet','settings'];
+    const pageIcons = { home:'🏠', accounting:'💰', plan:'📝', discipline:'🔥', experience:'💡', water:'💧', memo:'📋', review:'📊', diet:'🍽️', settings:'⚙️' };
+    const pageTitles = { home:'首页', accounting:'记账', plan:'计划', discipline:'自律', experience:'经验', water:'喝水', memo:'备忘录', review:'复盘', diet:'饮食', settings:'设置' };
 
     function navigate(page) {
       currentPage = page;
@@ -1162,6 +1265,9 @@
       if (page === 'experience') renderExperience();
       if (page === 'water') renderWater();
       if (page === 'memo') renderMemo();
+      if (page === 'review') renderReview();
+      if (page === 'diet') renderDiet();
+      if (page === 'settings') renderSettings();
     }
 
     function openDrawer() { document.getElementById('drawerOverlay').classList.add('active'); }
@@ -1185,6 +1291,8 @@
       const features = [
         { page:'plan', icon:'📝', name:'每日计划', desc:`打卡待办清单 · ${done}/${state.plan.tasks.length}`, color: 'var(--green-light)' },
         { page:'discipline', icon:'🔥', name:'自律打卡', desc:`今日打卡 · ${state.discipline.habits.filter(h => isHabitDoneToday(h)).length}/${state.discipline.habits.length}`, color: 'var(--purple-light)' },
+        { page:'review', icon:'📊', name:'每周复盘', desc:`持续成长 · ${state.review.reviews.length} 篇`, color: '#FFF0E6' },
+        { page:'diet', icon:'🍽️', name:'饮食记录', desc:`健康饮食 · ${todayDietCount()} 餐`, color: '#F0F8E6' },
         { page:'experience', icon:'💡', name:'经验库', desc:`知识笔记 · ${state.experience.notes.length} 条`, color: 'var(--blue-light)' },
         { page:'accounting', icon:'💰', name:'存钱计划', desc:`收支记录追踪 · ${formatMoney(saved)}`, color: 'var(--yellow-light)' },
         { page:'water', icon:'💧', name:'喝水记录', desc:`今日饮水 · ${state.water.today}ml`, color: '#E3F2FD' },
@@ -1693,6 +1801,8 @@
       if (type === 'discipline') openDisciplineModal();
       if (type === 'experience') openExperienceModal();
       if (type === 'memo') openMemoModal();
+      if (type === 'review') openReviewModal();
+      if (type === 'diet') openDietModal();
     }
     function openModalOverlay() {
       document.getElementById('modalOverlay').classList.add('active');
@@ -1810,6 +1920,262 @@
     function removeNoteMedia(noteType, index) {
       showToast('请在编辑弹窗中管理附件');
     }
+
+    // ===================== 每周复盘 =====================
+    function getWeekRange() {
+      const d = new Date();
+      const day = d.getDay() || 7; // Sunday=7
+      const monday = new Date(d); monday.setDate(d.getDate() - day + 1);
+      const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+      const fmt = dt => dt.toISOString().split('T')[0];
+      return { start: fmt(monday), end: fmt(sunday), label: fmt(monday) + ' ~ ' + fmt(sunday) };
+    }
+
+    function renderReview() {
+      const reviews = state.review.reviews.slice().reverse();
+      const week = getWeekRange();
+      const latest = reviews.find(r => r.weekStart === week.start);
+      document.getElementById('reviewScore').textContent = latest ? latest.score + '分' : '--';
+      document.getElementById('reviewCount').textContent = reviews.length + ' 周';
+
+      const list = document.getElementById('reviewList');
+      if (!reviews.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div>还没有复盘记录<br>本周: ' + week.label + '</div>';
+        return;
+      }
+      list.innerHTML = reviews.map(r => `
+        <div class="card">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>📅 ${r.weekStart} ~ ${r.weekEnd}</span>
+            <span style="font-size:20px;color:var(--primary);">${'⭐'.repeat(r.score)}</span>
+          </div>
+          <div style="margin:12px 0;"><strong style="color:var(--green);">✅ 做得好:</strong> <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;">${escapeHtml(r.done)}</div></div>
+          <div style="margin:12px 0;"><strong style="color:var(--primary);">🔄 待改进:</strong> <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;">${escapeHtml(r.improve)}</div></div>
+          <div style="margin:12px 0;"><strong style="color:var(--blue);">💡 学到什么:</strong> <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;">${escapeHtml(r.learned)}</div></div>
+          ${r.nextPlan ? '<div style="margin:12px 0;"><strong>🎯 下周计划:</strong> <div style="font-size:13px;margin-top:4px;white-space:pre-wrap;">'+escapeHtml(r.nextPlan)+'</div></div>' : ''}
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:11px;color:var(--text-secondary);">
+            <span>${formatTimeDisplay(r.date)}</span>
+            <button class="icon-btn" onclick="deleteReview('${r.id}')">🗑</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openReviewModal() {
+      const week = getWeekRange();
+      const existing = state.review.reviews.find(r => r.weekStart === week.start);
+      modalContext = { type: 'review', week };
+      document.getElementById('modalTitle').textContent = existing ? '✏ 编辑本周复盘' : '📊 本周复盘 ' + week.label;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="form-group"><label class="form-label">本周评分 (1-5)</label>
+          <select class="form-select" id="reviewScore">
+            <option value="5" ${existing&&existing.score===5?'selected':''}>⭐⭐⭐⭐⭐ 很棒</option>
+            <option value="4" ${existing&&existing.score===4?'selected':''}>⭐⭐⭐⭐ 不错</option>
+            <option value="3" ${existing&&existing.score===3?'selected':''}>⭐⭐⭐ 还行</option>
+            <option value="2" ${existing&&existing.score===2?'selected':''}>⭐⭐ 一般</option>
+            <option value="1" ${existing&&existing.score===1?'selected':''}>⭐ 加油</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">✅ 做得好 / 完成了什么</label><textarea class="form-textarea" id="reviewDone" placeholder="这周完成了哪些事情？有哪些亮点？">${existing ? existing.done : ''}</textarea></div>
+        <div class="form-group"><label class="form-label">🔄 待改进</label><textarea class="form-textarea" id="reviewImprove" placeholder="哪些地方可以做得更好？">${existing ? existing.improve : ''}</textarea></div>
+        <div class="form-group"><label class="form-label">💡 学到了什么</label><textarea class="form-textarea" id="reviewLearned" placeholder="这周有哪些收获和感悟？">${existing ? existing.learned : ''}</textarea></div>
+        <div class="form-group"><label class="form-label">🎯 下周计划</label><textarea class="form-textarea" id="reviewNextPlan" placeholder="下周的目标和计划...">${existing ? existing.nextPlan || '' : ''}</textarea></div>
+        <button class="btn" style="width:100%" onclick="saveReview()">💾 保存复盘</button>
+      `;
+      openModalOverlay();
+    }
+
+    function saveReview() {
+      const score = parseInt(document.getElementById('reviewScore').value);
+      const done = document.getElementById('reviewDone').value.trim();
+      const improve = document.getElementById('reviewImprove').value.trim();
+      const learned = document.getElementById('reviewLearned').value.trim();
+      const nextPlan = document.getElementById('reviewNextPlan').value.trim();
+      if (!done && !improve && !learned) return showToast('至少填写一项内容');
+
+      const week = modalContext.week;
+      const existing = state.review.reviews.find(r => r.weekStart === week.start);
+      if (existing) {
+        existing.score = score; existing.done = done; existing.improve = improve;
+        existing.learned = learned; existing.nextPlan = nextPlan; existing.date = nowTimeStr();
+      } else {
+        state.review.reviews.push({
+          id: uuid(), score, done, improve, learned, nextPlan,
+          weekStart: week.start, weekEnd: week.end, date: nowTimeStr()
+        });
+      }
+      saveState(); closeModal(); renderReview(); showToast('复盘已保存');
+    }
+
+    function deleteReview(id) {
+      if (!confirm('确定删除这周复盘？')) return;
+      state.review.reviews = state.review.reviews.filter(r => r.id !== id);
+      saveState(); renderReview(); showToast('已删除');
+    }
+
+    // ===================== 饮食记录 =====================
+    const mealTypes = ['早餐','午餐','晚餐','加餐','零食'];
+
+    function todayDietCount() {
+      const today = todayStr();
+      return state.diet.records.filter(r => r.date.startsWith(today)).length;
+    }
+
+    function renderDiet() {
+      const today = todayStr();
+      const todayRecords = state.diet.records.filter(r => r.date.startsWith(today));
+      document.getElementById('dietCount').textContent = todayRecords.length;
+      document.getElementById('dietCal').textContent = todayRecords.reduce((s, r) => s + (r.cal || 0), 0) + ' kcal';
+
+      // 今日概览
+      const overview = document.getElementById('dietOverview');
+      const grouped = {};
+      mealTypes.forEach(mt => grouped[mt] = []);
+      todayRecords.forEach(r => { const mt = r.mealType || '其他'; if (!grouped[mt]) grouped[mt] = []; grouped[mt].push(r); });
+      overview.innerHTML = Object.entries(grouped).filter(([k,v]) => v.length).map(([mt, items]) => `
+        <div style="margin-bottom:10px;">
+          <strong>${mealIcons[mt]||'🍽️'} ${mt}</strong>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:4px;">
+            ${items.map(r => r.food + (r.cal ? ' (' + r.cal + ' kcal)' : '')).join('、')}
+          </div>
+        </div>
+      `).join('') || '<div class="empty-state" style="padding:12px;">今天还没有记录</div>';
+
+      // 历史列表
+      const records = state.diet.records.slice().reverse();
+      const list = document.getElementById('dietList');
+      if (!records.length) {
+        list.innerHTML = '';
+      } else {
+        list.innerHTML = '<div class="section-title">📜 全部记录</div>' + records.map(r => `
+          <div class="list-item">
+            <div style="width:40px;height:40px;border-radius:12px;background:var(--yellow-light);display:flex;align-items:center;justify-content:center;font-size:20px;">${mealIcons[r.mealType]||'🍽️'}</div>
+            <div class="list-content">
+              <div class="list-title">${r.mealType || '餐'} · ${r.food}</div>
+              <div class="list-meta">${formatTimeDisplay(r.date)} ${r.cal ? '· ' + r.cal + ' kcal' : ''} ${r.note ? '· ' + r.note : ''}</div>
+            </div>
+            <div class="list-actions">
+              <button class="icon-btn" onclick="deleteDiet('${r.id}')">🗑</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    const mealIcons = { '早餐':'🌅', '午餐':'☀️', '晚餐':'🌙', '加餐':'🍎', '零食':'🍪' };
+
+    function openDietModal() {
+      modalContext = { type: 'diet' };
+      document.getElementById('modalTitle').textContent = '🍽️ 记录一餐';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="form-group"><label class="form-label">餐别</label>
+          <div class="filter-tabs" id="dietMealTabs">
+            ${mealTypes.map(mt => `<button class="filter-tab" data-meal="${mt}" onclick="selectDietMeal(this,'${mt}')">${mealIcons[mt]} ${mt}</button>`).join('')}
+          </div>
+          <input type="hidden" id="dietMealType" value="午餐">
+        </div>
+        <div class="form-group"><label class="form-label">吃了什么</label><input class="form-input" id="dietFood" placeholder="如：番茄炒蛋、米饭、鸡胸肉"></div>
+        <div class="form-group"><label class="form-label">热量 (kcal) 可选</label><input class="form-input" type="number" id="dietCal" placeholder="如：450" step="1"></div>
+        <div class="form-group"><label class="form-label">备注</label><input class="form-input" id="dietNote" placeholder="如：味道不错"></div>
+        <div class="form-group"><label class="form-label">时间</label><input class="form-input" type="datetime-local" id="dietDate" value="${nowTimeStr().replace(' ','T')}"></div>
+        <button class="btn" style="width:100%" onclick="saveDiet()">💾 保存</button>
+      `;
+      // 默认选中午餐
+      setTimeout(() => {
+        const lunchBtn = document.querySelector('#dietMealTabs button[data-meal="午餐"]');
+        if (lunchBtn) lunchBtn.classList.add('active');
+      }, 50);
+      openModalOverlay();
+    }
+
+    function selectDietMeal(btn, type) {
+      btn.parentElement.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('dietMealType').value = type;
+    }
+
+    function saveDiet() {
+      const mealType = document.getElementById('dietMealType').value;
+      const food = document.getElementById('dietFood').value.trim();
+      const cal = parseInt(document.getElementById('dietCal').value) || 0;
+      const note = document.getElementById('dietNote').value.trim();
+      const rawDate = document.getElementById('dietDate').value || nowTimeStr();
+      const date = rawDate.replace('T', ' ');
+      if (!food) return showToast('请输入吃了什么');
+      state.diet.records.push({ id: uuid(), mealType, food, cal, note, date });
+      saveState(); closeModal(); renderDiet(); showToast('饮食已记录');
+    }
+
+    function deleteDiet(id) {
+      if (!confirm('确定删除这条记录？')) return;
+      state.diet.records = state.diet.records.filter(r => r.id !== id);
+      saveState(); renderDiet(); showToast('已删除');
+    }
+
+    // ===================== 设置 =====================
+    function renderSettings() {
+      document.getElementById('setName').value = state.settings.name || '刘何羊';
+      document.getElementById('setSaveGoal').value = state.settings.saveGoal || 12000;
+      document.getElementById('setWaterGoal').value = state.settings.waterGoal || 2000;
+    }
+
+    function saveSettings() {
+      const name = document.getElementById('setName').value.trim() || '刘何羊';
+      const saveGoal = parseInt(document.getElementById('setSaveGoal').value) || 12000;
+      const waterGoal = parseInt(document.getElementById('setWaterGoal').value) || 2000;
+      state.settings.name = name;
+      state.settings.saveGoal = saveGoal;
+      state.settings.waterGoal = waterGoal;
+      // 同步到其他模块
+      state.accounting.goal = saveGoal;
+      state.water.goal = waterGoal;
+      saveState();
+      // 更新标题
+      document.title = name + '的工作台';
+      showToast('设置已保存');
+    }
+
+    function exportData() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'liuheyang-workbench-backup-' + todayStr() + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('数据已导出');
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!confirm('导入将覆盖当前所有数据，确定继续？')) return;
+          state = data;
+          saveState();
+          navigate('home');
+          showToast('数据已导入');
+        } catch (err) {
+          showToast('文件格式错误');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function clearAllData() {
+      if (!confirm('⚠️ 确定要清除所有数据吗？此操作不可恢复！\n\n建议先导出数据备份。')) return;
+      if (!confirm('再次确认：清除所有数据？')) return;
+      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      saveState();
+      navigate('home');
+      showToast('所有数据已清除');
+    }
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -1824,6 +2190,14 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
     // Migrate today's water into history if exists from older state
+    // Sync settings to modules
+    if (state.settings && state.settings.saveGoal) state.accounting.goal = state.settings.saveGoal;
+    if (state.settings && state.settings.waterGoal) state.water.goal = state.settings.waterGoal;
+    if (state.settings && state.settings.name) document.title = state.settings.name + '的工作台';
+    // Ensure new state keys exist
+    if (!state.review) state.review = { reviews: [] };
+    if (!state.diet) state.diet = { records: [] };
+    if (!state.settings) state.settings = { name: '刘何羊', saveGoal: 12000, waterGoal: 2000 };
     saveWaterHistory();
     saveState();
     initHistory();
