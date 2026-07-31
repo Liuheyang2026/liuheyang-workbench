@@ -220,7 +220,6 @@
       gap: 12px;
       user-select: none;
       -webkit-user-select: none;
-      touch-action: none;
     }
     .feature-card:active { transform: scale(0.98); }
     .feature-icon {
@@ -2614,10 +2613,12 @@
         el.style.boxShadow = '0 8px 30px rgba(74,63,53,0.2)';
         if (navigator.vibrate) navigator.vibrate(15);
       }, 500);
+      // 不在 touchstart 里 preventDefault，让正常滑动能工作
     }
 
     function featureTouchMove(e) {
       if (!touchMoved || !dragEl) return;
+      // 只有真正进入拖拽模式才阻止滚动
       e.preventDefault();
       const touch = e.touches[0];
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
