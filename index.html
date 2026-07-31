@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="theme-color" content="#FDF6F0">
@@ -116,6 +116,8 @@
       overflow-y: auto;
       overflow-x: hidden;
       padding: 24px 28px;
+      /* 增加底部安全内边距，避免被手机浏览器工具栏遮挡 */
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px) + 80px);
       scroll-behavior: smooth;
     }
     .content::-webkit-scrollbar { width: 0; }
@@ -384,7 +386,10 @@
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .mobile-header { display: flex; }
-      .content { padding: 16px; }
+      .content { 
+        padding: 16px; 
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px) + 90px);
+      }
       .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
       .stat-card { padding: 14px 6px; }
       .stat-value { font-size: 20px; }
