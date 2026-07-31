@@ -586,6 +586,117 @@
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     .section-title { font-size: 15px; font-weight: 700; margin: 18px 0 10px; }
+
+    /* Media attachments */
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .media-grid.single { grid-template-columns: 1fr; }
+    .media-item {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--bg-soft);
+    }
+    .media-item img, .media-item video {
+      width: 100%;
+      display: block;
+      border-radius: 10px;
+      max-height: 200px;
+      object-fit: cover;
+    }
+    .media-item video { max-height: 240px; }
+    .media-remove {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: rgba(74,63,53,0.7);
+      color: #fff;
+      border: none;
+      font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .upload-area {
+      border: 2px dashed rgba(74,63,53,0.15);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      margin: 10px 0;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .upload-area:hover, .upload-area:active { border-color: var(--primary); background: rgba(244,166,152,0.04); }
+    .upload-area-icon { font-size: 32px; margin-bottom: 6px; }
+    .upload-area-text { font-size: 13px; color: var(--text-secondary); }
+    .upload-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .upload-preview-item {
+      width: 80px; height: 80px;
+      border-radius: 10px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      border: 2px solid var(--primary-light);
+    }
+    .upload-preview-item video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .upload-preview-remove {
+      position: absolute;
+      top: -6px; right: -6px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .media-fullscreen {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .media-fullscreen img, .media-fullscreen video {
+      max-width: 96vw;
+      max-height: 96vh;
+      border-radius: 12px;
+    }
+    .media-fullscreen-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border: none;
+      font-size: 22px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .note-media-count {
+      font-size: 11px;
+      color: var(--primary);
+      font-weight: 600;
+      margin-left: 6px;
+    }
   </style>
 </head>
 <body>
@@ -889,8 +1000,8 @@
       },
       experience: {
         notes: [
-          { id: 'e1', title: '记账心得', content: '记账不是为了省钱，而是为了清楚地知道钱花在哪里。', tags: '财务', date: getMonthDate(0) + ' 14:20' },
-          { id: 'e2', title: '自律小技巧', content: '把大目标拆成每天可做的小动作，降低启动成本。', tags: '自律', date: getMonthDate(-1) + ' 22:10' }
+          { id: 'e1', title: '记账心得', content: '记账不是为了省钱，而是为了清楚地知道钱花在哪里。', tags: '财务', media: [], date: getMonthDate(0) + ' 14:20' },
+          { id: 'e2', title: '自律小技巧', content: '把大目标拆成每天可做的小动作，降低启动成本。', tags: '自律', media: [], date: getMonthDate(-1) + ' 22:10' }
         ]
       },
       water: {
@@ -901,7 +1012,7 @@
       },
       memo: {
         memos: [
-          { id: 'm1', title: '待买清单', content: '牛奶、鸡蛋、全麦面包、咖啡豆', pinned: false, important: false, date: getMonthDate(0) + ' 10:15' }
+          { id: 'm1', title: '待买清单', content: '牛奶、鸡蛋、全麦面包、咖啡豆', pinned: false, important: false, media: [], date: getMonthDate(0) + ' 10:15' }
         ]
       },
       home: {
@@ -1397,7 +1508,8 @@
       } else {
         list.innerHTML = notes.map(n => `
           <div class="note-card">
-            <div class="note-title">${n.title}</div>
+            <div class="note-title">${n.title}${(n.media && n.media.length) ? '<span class="note-media-count">📎' + n.media.length + '</span>' : ''}</div>
+            ${renderMediaGrid(n.media)}
             <div class="note-body">${n.content}</div>
             <div class="note-footer">
               <div><span class="tag">${n.tags || '未分类'}</span> <span style="font-size:11px;color:var(--text-secondary)">🕐 ${formatTimeDisplay(n.date)}</span></div>
@@ -1412,15 +1524,18 @@
     }
     function openExperienceModal(id) {
       const isEdit = !!id;
-      const n = isEdit ? state.experience.notes.find(x => x.id === id) : { title:'', content:'', tags:'' };
-      modalContext = { type: 'experience', id };
+      const n = isEdit ? state.experience.notes.find(x => x.id === id) : { title:'', content:'', tags:'', media:[] };
+      modalContext = { type: 'experience', id, media: (n.media || []).slice() };
       document.getElementById('modalTitle').textContent = isEdit ? '✏ 编辑笔记' : '💡 新笔记';
       document.getElementById('modalBody').innerHTML = `
-        <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="expTitle" value="${n.title}" placeholder="笔记标题"></div>
-        <div class="form-group"><label class="form-label">标签</label><input class="form-input" id="expTags" value="${n.tags}" placeholder="如：学习、工作"></div>
-        <div class="form-group"><label class="form-label">内容</label><textarea class="form-textarea" id="expContent" placeholder="写下你的经验与心得...">${n.content}</textarea></div>
+        <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="expTitle" value="${escapeHtml(n.title)}" placeholder="笔记标题"></div>
+        <div class="form-group"><label class="form-label">标签</label><input class="form-input" id="expTags" value="${escapeHtml(n.tags)}" placeholder="如：学习、工作"></div>
+        <div class="form-group"><label class="form-label">内容</label><textarea class="form-textarea" id="expContent" placeholder="写下你的经验与心得...">${escapeHtml(n.content)}</textarea></div>
+        ${buildMediaUploader(modalContext.media)}
         <button class="btn" style="width:100%" onclick="saveExperience()">保存</button>
       `;
+      // 绑定上传事件
+      document.getElementById('mediaInput').addEventListener('change', handleMediaSelect);
       openModalOverlay();
     }
     function saveExperience() {
@@ -1428,11 +1543,12 @@
       const tags = document.getElementById('expTags').value.trim();
       const content = document.getElementById('expContent').value.trim();
       if (!title || !content) return showToast('请填写标题和内容');
+      const media = modalContext.media || [];
       if (modalContext.id) {
         const n = state.experience.notes.find(x => x.id === modalContext.id);
-        n.title = title; n.tags = tags; n.content = content; n.date = nowTimeStr();
+        n.title = title; n.tags = tags; n.content = content; n.media = media; n.date = nowTimeStr();
       } else {
-        state.experience.notes.push({ id: uuid(), title, tags, content, date: nowTimeStr() });
+        state.experience.notes.push({ id: uuid(), title, tags, content, media, date: nowTimeStr() });
       }
       saveState(); closeModal(); renderExperience(); showToast('笔记已保存');
     }
@@ -1513,7 +1629,8 @@
       } else {
         list.innerHTML = memos.map(m => `
           <div class="note-card" style="${m.important ? 'border-left:4px solid var(--primary);' : ''}">
-            <div class="note-title">${m.pinned ? '📌 ' : ''}${m.important ? '❗ ' : ''}${m.title}</div>
+            <div class="note-title">${m.pinned ? '📌 ' : ''}${m.important ? '❗ ' : ''}${m.title}${(m.media && m.media.length) ? '<span class="note-media-count">📎' + m.media.length + '</span>' : ''}</div>
+            ${renderMediaGrid(m.media)}
             <div class="note-body">${m.content}</div>
             <div class="note-footer">
               <span style="font-size:11px;color:var(--text-secondary)">🕐 ${formatTimeDisplay(m.date)}</span>
@@ -1529,30 +1646,33 @@
     }
     function openMemoModal(id) {
       const isEdit = !!id;
-      const m = isEdit ? state.memo.memos.find(x => x.id === id) : { title:'', content:'', pinned:false, important:false };
-      modalContext = { type: 'memo', id };
+      const m = isEdit ? state.memo.memos.find(x => x.id === id) : { title:'', content:'', pinned:false, important:false, media:[] };
+      modalContext = { type: 'memo', id, media: (m.media || []).slice() };
       document.getElementById('modalTitle').textContent = isEdit ? '✏ 编辑备忘' : '📋 新备忘';
       document.getElementById('modalBody').innerHTML = `
-        <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="memoTitle" value="${m.title}" placeholder="备忘标题"></div>
-        <div class="form-group"><label class="form-label">内容</label><textarea class="form-textarea" id="memoContent" placeholder="写下要记的事...">${m.content}</textarea></div>
+        <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="memoTitle" value="${escapeHtml(m.title)}" placeholder="备忘标题"></div>
+        <div class="form-group"><label class="form-label">内容</label><textarea class="form-textarea" id="memoContent" placeholder="写下要记的事...">${escapeHtml(m.content)}</textarea></div>
         <div class="form-group" style="display:flex;align-items:center;gap:10px;">
           <input type="checkbox" id="memoImportant" ${m.important ? 'checked' : ''} style="width:18px;height:18px;">
           <label for="memoImportant" style="font-size:14px;">标记为重要</label>
         </div>
+        ${buildMediaUploader(modalContext.media)}
         <button class="btn" style="width:100%" onclick="saveMemo()">保存</button>
       `;
+      document.getElementById('mediaInput').addEventListener('change', handleMediaSelect);
       openModalOverlay();
     }
     function saveMemo() {
       const title = document.getElementById('memoTitle').value.trim();
       const content = document.getElementById('memoContent').value.trim();
       const important = document.getElementById('memoImportant').checked;
+      const media = modalContext.media || [];
       if (!title && !content) return showToast('请填写内容');
       if (modalContext.id) {
         const m = state.memo.memos.find(x => x.id === modalContext.id);
-        m.title = title || '无标题'; m.content = content; m.important = important; m.date = nowTimeStr();
+        m.title = title || '无标题'; m.content = content; m.important = important; m.media = media; m.date = nowTimeStr();
       } else {
-        state.memo.memos.push({ id: uuid(), title: title || '无标题', content, pinned: false, important, date: nowTimeStr() });
+        state.memo.memos.push({ id: uuid(), title: title || '无标题', content, pinned: false, important, media, date: nowTimeStr() });
       }
       saveState(); closeModal(); renderMemo(); showToast('备忘已保存');
     }
@@ -1580,6 +1700,115 @@
     function closeModal() {
       document.getElementById('modalOverlay').classList.remove('active');
       modalContext = null;
+    }
+
+    // ===================== Media (图片/视频上传) =====================
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function buildMediaUploader(mediaList) {
+      const previews = (mediaList || []).map((m, i) => `
+        <div class="upload-preview-item" style="background-image:url('${m.type==='image'?m.data:''}')">
+          ${m.type === 'video' ? '<video src="'+m.data+'" muted></video>' : ''}
+          <button class="upload-preview-remove" onclick="removeMedia(${i})">×</button>
+        </div>
+      `).join('');
+      return `
+        <div class="form-group">
+          <label class="form-label">📸 图片 / 🎬 视频</label>
+          <div class="upload-area" onclick="document.getElementById('mediaInput').click()">
+            <div class="upload-area-icon">📁</div>
+            <div class="upload-area-text">点击上传图片或视频（最大 10MB）</div>
+          </div>
+          <input type="file" id="mediaInput" accept="image/*,video/*" style="display:none;" multiple>
+          <div class="upload-preview">${previews}</div>
+        </div>
+      `;
+    }
+
+    async function handleMediaSelect(e) {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+      if (!modalContext.media) modalContext.media = [];
+      const maxSize = 10 * 1024 * 1024; // 10MB per file
+      for (const file of files) {
+        if (file.size > maxSize) { showToast('文件超过 10MB，已跳过'); continue; }
+        const type = file.type.startsWith('video/') ? 'video' : 'image';
+        const data = await fileToBase64(file);
+        if (data) modalContext.media.push({ type, data, name: file.name });
+      }
+      // 重新渲染上传区域
+      const previewDiv = document.querySelector('.upload-preview');
+      if (previewDiv) {
+        const media = modalContext.media || [];
+        previewDiv.innerHTML = media.map((m, i) => `
+          <div class="upload-preview-item" style="background-image:url('${m.type==='image'?m.data:''}')">
+            ${m.type === 'video' ? '<video src="'+m.data+'" muted></video>' : ''}
+            <button class="upload-preview-remove" onclick="removeMedia(${i})">×</button>
+          </div>
+        `).join('');
+      }
+      e.target.value = '';
+    }
+
+    function removeMedia(index) {
+      if (modalContext && modalContext.media) {
+        modalContext.media.splice(index, 1);
+      }
+      const previewDiv = document.querySelector('.upload-preview');
+      if (previewDiv) {
+        const media = modalContext.media || [];
+        previewDiv.innerHTML = media.map((m, i) => `
+          <div class="upload-preview-item" style="background-image:url('${m.type==='image'?m.data:''}')">
+            ${m.type === 'video' ? '<video src="'+m.data+'" muted></video>' : ''}
+            <button class="upload-preview-remove" onclick="removeMedia(${i})">×</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => { showToast('读取文件失败'); resolve(null); };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderMediaGrid(media) {
+      if (!media || !media.length) return '';
+      const cls = media.length === 1 ? 'media-grid single' : 'media-grid';
+      return `<div class="${cls}">` + media.map((m, i) => `
+        <div class="media-item" onclick="openMediaFullscreen(event, '${m.type}', \`${m.data.replace(/`/g,'\\`').replace(/\\/g,'\\\\')}\`)">
+          ${m.type === 'image'
+            ? '<img src="'+m.data+'" loading="lazy" alt="media">'
+            : '<video src="'+m.data+'" muted playsinline preload="metadata"></video>'}
+          <button class="media-remove" onclick="event.stopPropagation(); removeNoteMedia('${modalContext?.type || ''}', ${i})">×</button>
+        </div>
+      `).join('') + '</div>';
+    }
+
+    function openMediaFullscreen(e, type, data) {
+      e.stopPropagation();
+      const overlay = document.createElement('div');
+      overlay.className = 'media-fullscreen';
+      overlay.onclick = () => overlay.remove();
+      overlay.innerHTML = `
+        <button class="media-fullscreen-close" onclick="this.parentElement.remove()">×</button>
+        ${type === 'image'
+          ? '<img src="'+data+'" alt="fullscreen">'
+          : '<video src="'+data+'" controls autoplay playsinline></video>'}
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    // 从列表中删除媒体（仅用于展示，不同步到 modalContext）
+    // 目前主要编辑入口是 modal，这个保留用于未来扩展
+    function removeNoteMedia(noteType, index) {
+      showToast('请在编辑弹窗中管理附件');
     }
     function showToast(msg) {
       const t = document.getElementById('toast');
