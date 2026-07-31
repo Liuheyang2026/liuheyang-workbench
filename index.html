@@ -2556,12 +2556,13 @@
     let dragEl = null;
     let touchTimer = null;
     let touchMoved = false;
-    let ghostEl = null;
+    let touchDragging = false;
     let dragStartIdx = -1;
 
     function handleFeatureClick(e, page) {
-      // 如果刚完成拖拽操作，不触发点击
-      if (dragStartIdx >= 0) {
+      // 只有真正完成了一次拖拽操作才拦截点击
+      if (touchDragging) {
+        touchDragging = false;
         e.preventDefault();
         e.stopPropagation();
         return;
@@ -2573,7 +2574,6 @@
     function featureDragStart(e) {
       dragEl = e.target.closest('.feature-card');
       if (!dragEl) return;
-      dragStartIdx = parseInt(dragEl.dataset.idx);
       dragEl.style.opacity = '0.5';
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', dragEl.dataset.fid);
@@ -2595,13 +2595,12 @@
         renderHome();
       }
       dragEl = null;
-      dragStartIdx = -1;
     }
 
     // 移动端长按拖拽
     function featureTouchStart(e, el) {
       touchMoved = false;
-      dragStartIdx = parseInt(el.dataset.idx);
+      touchDragging = false;
       clearTimeout(touchTimer);
       touchTimer = setTimeout(() => {
         touchMoved = true;
@@ -2613,12 +2612,11 @@
         el.style.boxShadow = '0 8px 30px rgba(74,63,53,0.2)';
         if (navigator.vibrate) navigator.vibrate(15);
       }, 500);
-      // 不在 touchstart 里 preventDefault，让正常滑动能工作
     }
 
     function featureTouchMove(e) {
       if (!touchMoved || !dragEl) return;
-      // 只有真正进入拖拽模式才阻止滚动
+      touchDragging = true;
       e.preventDefault();
       const touch = e.touches[0];
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -2645,12 +2643,15 @@
         dragEl.style.position = '';
         dragEl.style.boxShadow = '';
       }
-      if (touchMoved && dragEl) {
-        // 保存新顺序
+      if (touchDragging && dragEl) {
         const cards = Array.from(document.getElementById('featureGrid').children);
         state.home.featureOrder = cards.map(c => c.dataset.fid);
         saveState();
       }
+      touchMoved = false;
+      dragEl = null;
+      // touchDragging 保留到下一次 click 判断后清除
+    }
       touchMoved = false;
       dragEl = null;
       // 延迟重置 dragStartIdx 防止触发 click
