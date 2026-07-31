@@ -2652,11 +2652,6 @@
       dragEl = null;
       // touchDragging 保留到下一次 click 判断后清除
     }
-      touchMoved = false;
-      dragEl = null;
-      // 延迟重置 dragStartIdx 防止触发 click
-      setTimeout(() => { dragStartIdx = -1; }, 100);
-    }
 
     // ===================== Init =====================
     document.querySelectorAll('.sidebar .nav-item').forEach(item => {
