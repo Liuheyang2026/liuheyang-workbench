@@ -1252,6 +1252,8 @@
     let state = loadState();
     let currentPage = 'home';
     let modalContext = null;
+    let modalOpen = false;
+    let modalClosing = false;
 
     function getMonthDate(offsetDays) {
       const d = new Date();
@@ -1348,6 +1350,19 @@
 
     function handlePopstate(e) {
       const st = e.state || {};
+
+      // 如果正在由 closeModal 消费 history 条目，直接忽略这次 pop
+      if (modalClosing) {
+        modalClosing = false;
+        modalOpen = false;
+        return;
+      }
+
+      // Modal 打开时优先关闭 modal（一层一层返回）
+      if (modalOpen) {
+        closeModal();
+        return;
+      }
 
       // 经验模块分层返回：笔记层 -> 分类层 -> 首页/退出
       if (currentPage === 'experience' && state.experience.currentCategory) {
@@ -2058,9 +2073,17 @@
       if (type === 'flash') openFlashModal();
     }
     function openModalOverlay() {
+      modalOpen = true;
+      modalClosing = false;
+      history.pushState({ page: currentPage, modal: true }, '', location.pathname + location.search);
       document.getElementById('modalOverlay').classList.add('active');
     }
     function closeModal() {
+      if (modalOpen) {
+        modalOpen = false;
+        modalClosing = true;
+        history.back();
+      }
       document.getElementById('modalOverlay').classList.remove('active');
       modalContext = null;
     }
