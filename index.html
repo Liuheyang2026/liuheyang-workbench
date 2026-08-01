@@ -1347,6 +1347,15 @@
     }
 
     function handlePopstate(e) {
+      const st = e.state || {};
+
+      // 经验模块分层返回：笔记层 -> 分类层 -> 首页/退出
+      if (currentPage === 'experience' && state.experience.currentCategory) {
+        backToExpCategories();
+        history.replaceState({ page: 'experience', expLevel: 'categories' }, '', location.pathname + location.search);
+        return;
+      }
+
       // 子页面返回：直接回到首页，不产生额外 toast
       if (currentPage !== 'home') {
         goHome();
@@ -1827,6 +1836,7 @@
 
     function enterExpCategory(catId) {
       state.experience.currentCategory = catId;
+      history.pushState({ page: 'experience', expLevel: 'notes' }, '', location.pathname + location.search);
       renderExperience();
     }
 
