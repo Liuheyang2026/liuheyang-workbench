@@ -909,17 +909,31 @@
 
         <!-- Experience -->
         <section class="page" id="page-experience">
-          <div class="page-header">
-            <div>
-              <h1 class="page-title">💡 经验</h1>
-              <div class="page-subtitle">知识库与心得</div>
+          <!-- 分类层 -->
+          <div id="expCategoryView">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">💡 经验</h1>
+                <div class="page-subtitle">知识库与心得</div>
+              </div>
+              <button class="btn" onclick="openCategoryModal()">+ 新分类</button>
             </div>
-            <button class="btn" onclick="openModal('experience')">+ 新笔记</button>
+            <div id="expCategoryList"></div>
           </div>
-          <div class="form-group" style="margin-bottom:16px;">
-            <input class="form-input" type="text" id="expSearch" placeholder="🔍 搜索经验..." oninput="renderExperience()">
+          <!-- 笔记层 -->
+          <div id="expNotesView" style="display:none;">
+            <div class="page-header">
+              <div>
+                <button class="btn btn-sm btn-outline" onclick="backToExpCategories()">‹ 返回分类</button>
+                <h1 class="page-title" id="expCurrentCatName" style="margin-top:8px;">分类</h1>
+              </div>
+              <button class="btn" onclick="openModal('experience')">+ 新笔记</button>
+            </div>
+            <div class="form-group" style="margin-bottom:16px;">
+              <input class="form-input" type="text" id="expSearch" placeholder="🔍 搜索经验..." oninput="renderExperience()">
+            </div>
+            <div id="expList"></div>
           </div>
-          <div id="expList"></div>
         </section>
 
         <!-- Water -->
@@ -1178,10 +1192,16 @@
         ]
       },
       experience: {
+        categories: [
+          { id: 'cat1', name: '生病类', icon: '💊' },
+          { id: 'cat2', name: '减肥类', icon: '🏃' },
+          { id: 'cat3', name: '剪辑类', icon: '✂️' }
+        ],
         notes: [
-          { id: 'e1', title: '记账心得', content: '记账不是为了省钱，而是为了清楚地知道钱花在哪里。', tags: '财务', media: [], date: getMonthDate(0) + ' 14:20' },
-          { id: 'e2', title: '自律小技巧', content: '把大目标拆成每天可做的小动作，降低启动成本。', tags: '自律', media: [], date: getMonthDate(-1) + ' 22:10' }
-        ]
+          { id: 'e1', title: '记账心得', content: '记账不是为了省钱，而是为了清楚地知道钱花在哪里。', tags: '财务', catId: 'cat1', media: [], date: getMonthDate(0) + ' 14:20' },
+          { id: 'e2', title: '自律小技巧', content: '把大目标拆成每天可做的小动作，降低启动成本。', tags: '自律', catId: 'cat2', media: [], date: getMonthDate(-1) + ' 22:10' }
+        ],
+        currentCategory: null
       },
       water: {
         goal: 2000,
@@ -1734,20 +1754,67 @@
     }
 
     // ===================== Experience =====================
+    // ===================== 经验（分类+笔记两层） =====================
     function renderExperience() {
-      const q = document.getElementById('expSearch').value.trim().toLowerCase();
-      const notes = state.experience.notes.filter(n => !q || n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q) || n.tags.toLowerCase().includes(q)).slice().reverse();
+      // 如果有当前分类，显示笔记层
+      if (state.experience.currentCategory) {
+        renderExperienceNotes();
+        return;
+      }
+      // 否则显示分类层
+      renderExperienceCategories();
+    }
+
+    function renderExperienceCategories() {
+      document.getElementById('expCategoryView').style.display = '';
+      document.getElementById('expNotesView').style.display = 'none';
+      const cats = state.experience.categories || [];
+      const list = document.getElementById('expCategoryList');
+      if (!cats.length) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">💡</div>还没有分类<br>点击右上角创建</div>';
+        return;
+      }
+      list.innerHTML = cats.map(c => {
+        const count = state.experience.notes.filter(n => n.catId === c.id).length;
+        return `
+          <div class="list-item" style="cursor:pointer;" onclick="enterExpCategory('${c.id}')">
+            <div style="width:48px;height:48px;border-radius:14px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${c.icon || '📁'}</div>
+            <div class="list-content">
+              <div class="list-title">${c.name}</div>
+              <div class="list-meta">${count} 条经验</div>
+            </div>
+            <div class="list-actions">
+              <button class="icon-btn" onclick="event.stopPropagation();openCategoryModal('${c.id}')">✏</button>
+              <button class="icon-btn" onclick="event.stopPropagation();deleteCategory('${c.id}')">🗑</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderExperienceNotes() {
+      document.getElementById('expCategoryView').style.display = 'none';
+      document.getElementById('expNotesView').style.display = '';
+      const cat = state.experience.categories.find(c => c.id === state.experience.currentCategory);
+      document.getElementById('expCurrentCatName').textContent = (cat ? (cat.icon || '📁') + ' ' + cat.name : '全部笔记');
+
+      const q = (document.getElementById('expSearch')?.value || '').trim().toLowerCase();
+      const catId = state.experience.currentCategory;
+      let notes = state.experience.notes.filter(n => n.catId === catId);
+      if (q) notes = notes.filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q) || (n.tags||'').toLowerCase().includes(q));
+      notes = notes.slice().reverse();
+
       const list = document.getElementById('expList');
       if (!notes.length) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-icon">💡</div>还没有经验笔记</div>';
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">💡</div>还没有经验笔记<br>点击右上角添加</div>';
       } else {
         list.innerHTML = notes.map(n => `
           <div class="note-card">
-            <div class="note-title">${n.title}${(n.media && n.media.length) ? '<span class="note-media-count">📎' + n.media.length + '</span>' : ''}</div>
+            <div class="note-title">${escapeHtml(n.title)}${(n.media && n.media.length) ? '<span class="note-media-count">📎' + n.media.length + '</span>' : ''}</div>
             ${renderMediaGrid(n.media)}
-            <div class="note-body">${n.content}</div>
+            <div class="note-body">${escapeHtml(n.content)}</div>
             <div class="note-footer">
-              <div><span class="tag">${n.tags || '未分类'}</span> <span style="font-size:11px;color:var(--text-secondary)">🕐 ${formatTimeDisplay(n.date)}</span></div>
+              <div>${(n.tags||'').split(/[,，]/).filter(Boolean).map(t => '<span class="tag">'+escapeHtml(t.trim())+'</span>').join('')} <span style="font-size:11px;color:var(--text-secondary)">🕐 ${formatTimeDisplay(n.date)}</span></div>
               <div class="list-actions">
                 <button class="icon-btn" onclick="openExperienceModal('${n.id}')">✏</button>
                 <button class="icon-btn" onclick="deleteExperience('${n.id}')">🗑</button>
@@ -1757,10 +1824,55 @@
         `).join('');
       }
     }
+
+    function enterExpCategory(catId) {
+      state.experience.currentCategory = catId;
+      renderExperience();
+    }
+
+    function backToExpCategories() {
+      state.experience.currentCategory = null;
+      renderExperience();
+    }
+
+    function openCategoryModal(id) {
+      const isEdit = !!id;
+      const c = isEdit ? state.experience.categories.find(x => x.id === id) : { name:'', icon:'📁' };
+      modalContext = { type: 'category', id };
+      document.getElementById('modalTitle').textContent = isEdit ? '✏ 编辑分类' : '📁 新分类';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="form-group"><label class="form-label">分类名称</label><input class="form-input" id="catName" value="${escapeHtml(c.name)}" placeholder="如：生病类、减肥类"></div>
+        <div class="form-group"><label class="form-label">图标</label><input class="form-input" id="catIcon" value="${c.icon || '📁'}" maxlength="2"></div>
+        <button class="btn" style="width:100%" onclick="saveCategory()">💾 保存</button>
+      `;
+      openModalOverlay();
+    }
+
+    function saveCategory() {
+      const name = document.getElementById('catName').value.trim();
+      const icon = document.getElementById('catIcon').value.trim() || '📁';
+      if (!name) return showToast('请输入分类名称');
+      if (modalContext.id) {
+        const c = state.experience.categories.find(x => x.id === modalContext.id);
+        c.name = name; c.icon = icon;
+      } else {
+        state.experience.categories.push({ id: uuid(), name, icon });
+      }
+      saveState(); closeModal(); renderExperience(); showToast('分类已保存');
+    }
+
+    function deleteCategory(id) {
+      const count = state.experience.notes.filter(n => n.catId === id).length;
+      if (!confirm(`确定删除这个分类？${count ? '分类下有 ' + count + ' 条笔记将一并删除。' : ''}`)) return;
+      state.experience.categories = state.experience.categories.filter(c => c.id !== id);
+      state.experience.notes = state.experience.notes.filter(n => n.catId !== id);
+      saveState(); renderExperience(); showToast('分类已删除');
+    }
+
     function openExperienceModal(id) {
       const isEdit = !!id;
       const n = isEdit ? state.experience.notes.find(x => x.id === id) : { title:'', content:'', tags:'', media:[] };
-      modalContext = { type: 'experience', id, media: (n.media || []).slice() };
+      modalContext = { type: 'experience', id, media: (n.media || []).slice(), catId: state.experience.currentCategory };
       document.getElementById('modalTitle').textContent = isEdit ? '✏ 编辑笔记' : '💡 新笔记';
       document.getElementById('modalBody').innerHTML = `
         <div class="form-group"><label class="form-label">标题</label><input class="form-input" id="expTitle" value="${escapeHtml(n.title)}" placeholder="笔记标题"></div>
@@ -1769,24 +1881,26 @@
         ${buildMediaUploader(modalContext.media)}
         <button class="btn" style="width:100%" onclick="saveExperience()">保存</button>
       `;
-      // 绑定上传事件
       document.getElementById('mediaInput').addEventListener('change', handleMediaSelect);
       openModalOverlay();
     }
+
     function saveExperience() {
       const title = document.getElementById('expTitle').value.trim();
       const tags = document.getElementById('expTags').value.trim();
       const content = document.getElementById('expContent').value.trim();
       if (!title || !content) return showToast('请填写标题和内容');
       const media = modalContext.media || [];
+      const catId = modalContext.catId;
       if (modalContext.id) {
         const n = state.experience.notes.find(x => x.id === modalContext.id);
         n.title = title; n.tags = tags; n.content = content; n.media = media; n.date = nowTimeStr();
       } else {
-        state.experience.notes.push({ id: uuid(), title, tags, content, media, date: nowTimeStr() });
+        state.experience.notes.push({ id: uuid(), title, tags, content, media, catId, date: nowTimeStr() });
       }
       saveState(); closeModal(); renderExperience(); showToast('笔记已保存');
     }
+
     function deleteExperience(id) {
       if (!confirm('确定删除这条笔记？')) return;
       state.experience.notes = state.experience.notes.filter(n => n.id !== id);
@@ -2671,6 +2785,18 @@
     if (!state.challenge) state.challenge = { challenges: [] };
     if (!state.timer) state.timer = { history: [], timerMinutes: 25, timerSeconds: 0, isRunning: false, isCountUp: false, startTime: null, elapsed: 0, intervalId: null };
     if (!state.flash) state.flash = { ideas: [] };
+    // 兼容旧经验数据：如果没有 categories 字段，初始化
+    if (!state.experience.categories) {
+      state.experience.categories = [];
+      // 把旧笔记的 tags 作为分类
+      const oldTags = [...new Set(state.experience.notes.map(n => n.tags || '未分类'))];
+      oldTags.forEach((t, i) => {
+        const cid = 'cat_old_' + i;
+        state.experience.categories.push({ id: cid, name: t, icon: '📁' });
+        state.experience.notes.forEach(n => { if ((n.tags || '未分类') === t) n.catId = cid; });
+      });
+    }
+    if (!state.experience.currentCategory) state.experience.currentCategory = null;
     saveWaterHistory();
     saveState();
     initHistory();
